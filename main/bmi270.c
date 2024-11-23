@@ -649,7 +649,7 @@ void lectura(void) {
 void bmipowermode(void) {
     // PWR_CTRL: disable auxiliary sensor, gryo and temp; acc on
     // 400Hz en datos acc, filter: performance optimized, acc_range +/-8g (1g = 9.80665 m/s2, alcance max: 78.4532 m/s2, 16 bit= 65536 => 1bit = 78.4532/32768 m/s2)
-    uint8_t reg_pwr_ctrl = 0x7D, val_pwr_ctrl = 0x04;
+    uint8_t reg_pwr_ctrl = 0x7D, val_pwr_ctrl = 0x06;
     uint8_t reg_acc_conf = 0x40, val_acc_conf;
     uint8_t reg_pwr_conf = 0x7C, val_pwr_conf = 0x00;
 
