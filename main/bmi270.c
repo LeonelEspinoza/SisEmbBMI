@@ -623,8 +623,35 @@ void internal_status(void) {
     printf("Internal Status: %2X\n\n", tmp);
 }
 
-void lectura(void) {
-    uint8_t reg_intstatus = 0x03, tmp;
+void gyroscope_lecture(void){
+
+    uint8_t reg_intstatus  = 0x3, tmp;
+    uint8_t addr_gyr_z_lsb = 0x16;
+    uint8_t addr_gyr_z_msb = 0x17;
+    uint16_t gyr_z;
+
+    printf("gyroscope_lecture(): Enter while(i<9){...}\n\n");
+    int i=0;
+    while(1){
+
+        bmi_read(&reg_intstatus, &tmp, 1);
+        if ((tmp & 0b01000000) == 0x40){
+            ret = bmi_read(&addr_gyr_z_lsb, &tmp, 1);
+            gyr_z = tmp;
+            ret = bmi_read(&addr_gyr_z_msb, &tmp, 1);
+            gyr_z = (gyr_z << 8) | tmp;
+
+            printf("gyr_z: %f g\n", (int16_t)gyr_z * (8.000 / 32768));
+            i++;
+        }
+
+    }
+
+}
+
+void acceleration_lecture(void) {
+
+    uint8_t reg_intstatus  = 0x03, tmp;
     uint8_t addr_acc_x_lsb = 0x0C;
     uint8_t addr_acc_x_msb = 0x0D;
     uint8_t addr_acc_y_lsb = 0x0E;
@@ -635,8 +662,9 @@ void lectura(void) {
     uint16_t acc_y;
     uint16_t acc_z;
 
-    printf("lectura(): Enter while");
-    while (1) {
+    printf("acceleration_lecture(): Enter while(i<9){...}\n\n");
+    int i=0;
+    while(i<9){
         bmi_read(&reg_intstatus, &tmp, 1);
         if ((tmp & 0b10000000) == 0x80) {
             
@@ -663,8 +691,9 @@ void lectura(void) {
             printf("acc_z: %f g\n", (int16_t)acc_z * (8.000 / 32768));
 
             if (ret != ESP_OK) {
-                printf("Error lectura: %s \n", esp_err_to_name(ret));
+                printf("Error acceleration_lecture: %s \n", esp_err_to_name(ret));
             }
+            i++;
         }
     }
 }
@@ -705,6 +734,7 @@ void app_main(void) {
     check_initialization();
     bmipowermode();
     internal_status();
-    printf("Comienza lectura\n\n");
-    lectura();
+    printf("Comienza acceleration_lecture\n\n");
+    acceleration_lecture();
+    gyroscope_lecture();
 }
