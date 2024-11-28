@@ -54,3 +54,10 @@ Se debe entregar:
     6. Obtencion de una cuarta ventana luego del corte de comunicación (deberán ejecutar su app nuevamente). Esta ventana debe ser el del nuevo tamaño que difinieron en el paso 3.
 
 La tarea debe entregarse antes del día _29-11-2024 23:59_ 
+
+## To do
+ [ ] Lograr imprimir los tres ejes de aceleración  
+ [ ] Lograr imprimir los tres ejes de giroscopio  
+ [ ] Lograr comunicación Python-C  
+ [ ] ...  
+ [ ] ...  

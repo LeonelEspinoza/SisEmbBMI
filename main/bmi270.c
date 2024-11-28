@@ -625,13 +625,36 @@ void internal_status(void) {
 
 void lectura(void) {
     uint8_t reg_intstatus = 0x03, tmp;
+    uint8_t addr_acc_x_lsb = 0x0C;
+    uint8_t addr_acc_x_msb = 0x0D;
+    uint8_t addr_acc_y_lsb = 0x0E;
+    uint8_t addr_acc_y_msb = 0x0F;
     uint8_t addr_acc_z_lsb = 0x10;
     uint8_t addr_acc_z_msb = 0x11;
+    uint16_t acc_x;
+    uint16_t acc_y;
     uint16_t acc_z;
 
+    printf("lectura(): Enter while");
     while (1) {
         bmi_read(&reg_intstatus, &tmp, 1);
         if ((tmp & 0b10000000) == 0x80) {
+            
+            
+            ret = bmi_read(&addr_acc_x_msb, &tmp, 1);
+            acc_x = tmp;
+            ret = bmi_read(&addr_acc_x_lsb, &tmp, 1);
+            acc_x = (acc_x << 8) | tmp;
+            
+            printf("acc_x: %f g\n", (int16_t)acc_x * (8.000 / 32768));
+            
+            ret = bmi_read(&addr_acc_y_msb, &tmp, 1);
+            acc_y = tmp;
+            ret = bmi_read(&addr_acc_y_lsb, &tmp, 1);
+            acc_y = (acc_y << 8) | tmp;
+
+            printf("acc_y: %f g\n", (int16_t)acc_y * (8.000 / 32768));
+
             ret = bmi_read(&addr_acc_z_msb, &tmp, 1);
             acc_z = tmp;
             ret = bmi_read(&addr_acc_z_lsb, &tmp, 1);
