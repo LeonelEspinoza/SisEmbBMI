@@ -19,6 +19,7 @@
 #define ACK_VAL 0x0
 #define NACK_VAL 0x1
 #define Fodr 800
+#define N_MEASSURES 9
 
 esp_err_t ret = ESP_OK;
 esp_err_t ret2 = ESP_OK;
@@ -623,26 +624,70 @@ void internal_status(void) {
     printf("Internal Status: %2X\n\n", tmp);
 }
 
+void read_var_handler(uint8_t* addr_lsb, uint8_t* addr_msb, uint8_t* tmp, uint16_t* var){
+    ret = bmi_read(addr_lsb, tmp, 1);
+    *var = *tmp;
+    ret = bmi_read(addr_msb, tmp, 1);
+    *var = (*var << 8) | *tmp;
+}
+
 void gyroscope_lecture(void){
 
+    //uint8_t addr_gyr_cas = 0x3C;
+    //int8_t factor_zx;
+
     uint8_t reg_intstatus  = 0x3, tmp;
+    uint8_t addr_gyr_x_lsb = 0x12;
+    uint8_t addr_gyr_x_msb = 0x13;
+    uint8_t addr_gyr_y_lsb = 0x14;
+    uint8_t addr_gyr_y_msb = 0x15;
     uint8_t addr_gyr_z_lsb = 0x16;
     uint8_t addr_gyr_z_msb = 0x17;
+    uint16_t gyr_x;
+    uint16_t gyr_y;
     uint16_t gyr_z;
 
-    printf("gyroscope_lecture(): Enter while(i<9){...}\n\n");
+    printf("gyroscope_lecture(): Enter while(i<9){...}\n");
     int i=0;
-    while(1){
+    while(i<N_MEASSURES){
 
         bmi_read(&reg_intstatus, &tmp, 1);
         if ((tmp & 0b01000000) == 0x40){
-            ret = bmi_read(&addr_gyr_z_lsb, &tmp, 1);
-            gyr_z = tmp;
-            ret = bmi_read(&addr_gyr_z_msb, &tmp, 1);
-            gyr_z = (gyr_z << 8) | tmp;
+            printf("gyroscope_lecture(): i=%d \n",i);
+            read_var_handler(&addr_gyr_z_lsb, &addr_gyr_z_msb, &tmp, &gyr_z);
 
-            printf("gyr_z: %f g\n", (int16_t)gyr_z * (8.000 / 32768));
+            printf("gyr_z: %d g\n", (int16_t)gyr_z);
+            if (ret != ESP_OK) {
+                printf("Error gyroscope_lecture gyr_z: %s \n", esp_err_to_name(ret));
+            }
+
+            read_var_handler(&addr_gyr_y_lsb, &addr_gyr_y_msb, &tmp, &gyr_y);
+
+            printf("gyr_y: %d g\n", (int16_t)gyr_y);
+            if (ret != ESP_OK) {
+                printf("Error gyroscope_lecture gyr_y: %s \n", esp_err_to_name(ret));
+            }
+
+            read_var_handler(&addr_gyr_x_lsb, &addr_gyr_x_msb, &tmp, &gyr_x);
+            
+            printf("gyr_x: %d g\n", (int16_t)gyr_x);
+            if (ret != ESP_OK) {
+                printf("Error gyroscope_lecture gyr_x: %s \n", esp_err_to_name(ret));
+            }
+            
+            /*
+            ret = bmi_read(&addr_gyr_cas, &tmp,1);
+            factor_zx = tmp;
+
+            if (ret != ESP_OK) {
+                printf("Error gyroscope_lecture gyr_cas.factor_zx: %s \n", esp_err_to_name(ret));
+            }
+            printf("gyr_x: %d g\n", ((int16_t)gyr_x * factor_zx * (gyr_z)/512));
+            */
+            
+            
             i++;
+            printf("\n");
         }
 
     }
@@ -662,44 +707,61 @@ void acceleration_lecture(void) {
     uint16_t acc_y;
     uint16_t acc_z;
 
-    printf("acceleration_lecture(): Enter while(i<9){...}\n\n");
+    printf("acceleration_lecture(): Enter while(i<9){...}\n");
     int i=0;
-    while(i<9){
+    while(i<N_MEASSURES){
         bmi_read(&reg_intstatus, &tmp, 1);
         if ((tmp & 0b10000000) == 0x80) {
+            printf("acceleration_lecture(): i=%d \n",i);
             
-            
+            /*
             ret = bmi_read(&addr_acc_x_msb, &tmp, 1);
             acc_x = tmp;
             ret = bmi_read(&addr_acc_x_lsb, &tmp, 1);
             acc_x = (acc_x << 8) | tmp;
             
-            printf("acc_x: %f g\n", (int16_t)acc_x * (8.000 / 32768));
-            
             ret = bmi_read(&addr_acc_y_msb, &tmp, 1);
             acc_y = tmp;
             ret = bmi_read(&addr_acc_y_lsb, &tmp, 1);
             acc_y = (acc_y << 8) | tmp;
-
-            printf("acc_y: %f g\n", (int16_t)acc_y * (8.000 / 32768));
-
+            
             ret = bmi_read(&addr_acc_z_msb, &tmp, 1);
             acc_z = tmp;
             ret = bmi_read(&addr_acc_z_lsb, &tmp, 1);
             acc_z = (acc_z << 8) | tmp;
+            */
+            
+            read_var_handler(&addr_acc_x_lsb, &addr_acc_x_msb, &tmp, &acc_x);
+            printf("acc_x: %f g\n", (int16_t)acc_x * (8.000 / 32768));
 
+            if (ret != ESP_OK) {
+                printf("Error acceleration_lecture acc_x: %s \n", esp_err_to_name(ret));
+            }
+            
+
+            read_var_handler(&addr_acc_y_lsb, &addr_acc_y_msb, &tmp, &acc_y);
+            printf("acc_y: %f g\n", (int16_t)acc_y * (8.000 / 32768));
+
+            if (ret != ESP_OK) {
+                printf("Error acceleration_lecture acc_y: %s \n", esp_err_to_name(ret));
+            }
+
+
+            read_var_handler(&addr_acc_z_lsb, &addr_acc_z_msb, &tmp, &acc_z);
             printf("acc_z: %f g\n", (int16_t)acc_z * (8.000 / 32768));
 
             if (ret != ESP_OK) {
-                printf("Error acceleration_lecture: %s \n", esp_err_to_name(ret));
+                printf("Error acceleration_lecture acc_z: %s \n", esp_err_to_name(ret));
             }
+
             i++;
+            printf("\n");
         }
     }
 }
 
 void bmipowermode(void) {
-    // PWR_CTRL: disable auxiliary sensor, gryo and temp; acc on
+    // PWR_CTRL: disable auxiliary sensor, gryo and temp; acc, gyro on
     // 400Hz en datos acc, filter: performance optimized, acc_range +/-8g (1g = 9.80665 m/s2, alcance max: 78.4532 m/s2, 16 bit= 65536 => 1bit = 78.4532/32768 m/s2)
     uint8_t reg_pwr_ctrl = 0x7D, val_pwr_ctrl = 0x06;
     uint8_t reg_acc_conf = 0x40, val_acc_conf;

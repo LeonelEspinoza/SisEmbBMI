@@ -57,7 +57,7 @@ La tarea debe entregarse antes del día _29-11-2024 23:59_
 
 ## To do
  [X] Lograr imprimir los tres ejes de aceleración  
- [ ] Lograr imprimir los tres ejes de giroscopio  
+ [X] Lograr imprimir los tres ejes de giroscopio  
  [ ] Lograr comunicación Python-C  
  [ ] ...  
  [ ] ...  
