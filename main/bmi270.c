@@ -3,8 +3,12 @@
 
 #include "driver/gpio.h"
 #include "driver/i2c_master.h"
+#include "driver/uart.h"
 #include "esp_log.h"
 #include "esp_task.h"
+#include "nvs_flash.h"
+#include "nvs.h"
+#include "esp_sleep.h"
 #include "math.h"
 #include "sdkconfig.h"
 
@@ -19,12 +23,19 @@
 #define ACK_VAL 0x0
 #define NACK_VAL 0x1
 #define Fodr 800
-#define N_MEASSURES 9
+
+#define BUF_SIZE (128) // buffer size
+#define UART_NUM UART_NUM_0   // UART port number
+
+#define REDIRECT_LOGS 1 // if redirect ESP log to another UART
+
+#define M_PI 3.14159265358979323846
 
 esp_err_t ret = ESP_OK;
 esp_err_t ret2 = ESP_OK;
 
 uint16_t val0[6];
+int32_t N = 9;
 
 /*! @name  Global array that stores the configuration file of BMI270 */
 const uint8_t bmi270_config_file[] = {
@@ -624,6 +635,12 @@ void internal_status(void) {
     printf("Internal Status: %2X\n\n", tmp);
 }
 
+// Read UART_num for input with timeout of 1 sec
+int serial_read(char *buffer, int size){
+    int len = uart_read_bytes(UART_NUM, (uint8_t*)buffer, size, pdMS_TO_TICKS(1000));
+    return len;
+}
+
 void read_var_handler(uint8_t* addr_lsb, uint8_t* addr_msb, uint8_t* tmp, uint16_t* var){
     ret = bmi_read(addr_lsb, tmp, 1);
     *var = *tmp;
@@ -647,32 +664,32 @@ void gyroscope_lecture(void){
     uint16_t gyr_y;
     uint16_t gyr_z;
 
-    printf("gyroscope_lecture(): Enter while(i<9){...}\n");
+    printf("<gyroscope_lecture> Enter while(i<9){...}\n");
     int i=0;
-    while(i<N_MEASSURES){
+    while(i<N){
 
         bmi_read(&reg_intstatus, &tmp, 1);
         if ((tmp & 0b01000000) == 0x40){
-            printf("gyroscope_lecture(): i=%d \n",i);
+            printf("<gyroscope_lecture> i=%d \n",i);
             read_var_handler(&addr_gyr_z_lsb, &addr_gyr_z_msb, &tmp, &gyr_z);
 
             printf("gyr_z: %d g\n", (int16_t)gyr_z);
             if (ret != ESP_OK) {
-                printf("Error gyroscope_lecture gyr_z: %s \n", esp_err_to_name(ret));
+                printf("<gyroscope_lecture> Error reading gyr_z: %s \n", esp_err_to_name(ret));
             }
 
             read_var_handler(&addr_gyr_y_lsb, &addr_gyr_y_msb, &tmp, &gyr_y);
 
             printf("gyr_y: %d g\n", (int16_t)gyr_y);
             if (ret != ESP_OK) {
-                printf("Error gyroscope_lecture gyr_y: %s \n", esp_err_to_name(ret));
+                printf("<gyroscope_lecture> Error reading gyr_y: %s \n", esp_err_to_name(ret));
             }
 
             read_var_handler(&addr_gyr_x_lsb, &addr_gyr_x_msb, &tmp, &gyr_x);
             
             printf("gyr_x: %d g\n", (int16_t)gyr_x);
             if (ret != ESP_OK) {
-                printf("Error gyroscope_lecture gyr_x: %s \n", esp_err_to_name(ret));
+                printf("<gyroscope_lecture> Error reading gyr_x: %s \n", esp_err_to_name(ret));
             }
             
             /*
@@ -680,7 +697,7 @@ void gyroscope_lecture(void){
             factor_zx = tmp;
 
             if (ret != ESP_OK) {
-                printf("Error gyroscope_lecture gyr_cas.factor_zx: %s \n", esp_err_to_name(ret));
+                printf("<gyroscope_lecture> Error reading gyr_cas.factor_zx: %s \n", esp_err_to_name(ret));
             }
             printf("gyr_x: %d g\n", ((int16_t)gyr_x * factor_zx * (gyr_z)/512));
             */
@@ -707,12 +724,13 @@ void acceleration_lecture(void) {
     uint16_t acc_y;
     uint16_t acc_z;
 
-    printf("acceleration_lecture(): Enter while(i<9){...}\n");
+    printf("<acceleration_lecture> Enter while(i<9){...}\n");
     int i=0;
-    while(i<N_MEASSURES){
+    while(i<N){
+
         bmi_read(&reg_intstatus, &tmp, 1);
         if ((tmp & 0b10000000) == 0x80) {
-            printf("acceleration_lecture(): i=%d \n",i);
+            printf("<acceleration_lecture> i=%d \n",i);
             
             /*
             ret = bmi_read(&addr_acc_x_msb, &tmp, 1);
@@ -735,7 +753,7 @@ void acceleration_lecture(void) {
             printf("acc_x: %f g\n", (int16_t)acc_x * (8.000 / 32768));
 
             if (ret != ESP_OK) {
-                printf("Error acceleration_lecture acc_x: %s \n", esp_err_to_name(ret));
+                printf("<acceleration_lecture> Error reading acc_x: %s \n", esp_err_to_name(ret));
             }
             
 
@@ -743,7 +761,7 @@ void acceleration_lecture(void) {
             printf("acc_y: %f g\n", (int16_t)acc_y * (8.000 / 32768));
 
             if (ret != ESP_OK) {
-                printf("Error acceleration_lecture acc_y: %s \n", esp_err_to_name(ret));
+                printf("<acceleration_lecture> Error reading acc_y: %s \n", esp_err_to_name(ret));
             }
 
 
@@ -751,7 +769,7 @@ void acceleration_lecture(void) {
             printf("acc_z: %f g\n", (int16_t)acc_z * (8.000 / 32768));
 
             if (ret != ESP_OK) {
-                printf("Error acceleration_lecture acc_z: %s \n", esp_err_to_name(ret));
+                printf("<acceleration_lecture> Error reading acc_z: %s \n", esp_err_to_name(ret));
             }
 
             i++;
@@ -788,6 +806,194 @@ void bmipowermode(void) {
     vTaskDelay(1000 / portTICK_PERIOD_MS);
 }
 
+void end_conection(void){
+    esp_restart();
+    esp_deep_sleep(5000);
+}
+
+int my_write_nvs(char* var_name,int32_t var){
+    //Initialize NVS
+    esp_err_t err = nvs_flash_init();
+    if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND){
+        ESP_ERROR_CHECK(nvs_flash_erase());
+        err = nvs_flash_init();
+    }
+    if (err != ESP_OK) {
+        printf("<my_write_nvs> Error (%s) NVS flash init!\n", esp_err_to_name(err));
+        return 1;
+    }
+
+    //Open
+    nvs_handle_t my_handle;
+    err = nvs_open("storage", NVS_READWRITE, &my_handle);
+    if (err != ESP_OK) {
+        printf("<my_write_nvs> Error (%s) opening NVS handle!\n", esp_err_to_name(err));
+        return 1;
+    }
+
+    //Write
+    err = nvs_set_i32(my_handle, var_name, var);
+    if (err != ESP_OK){
+        printf("<my_write_nvs> Error (%s) writing %s in NVS!\n",esp_err_to_name(err),var_name);
+        //Close
+        nvs_close(my_handle);
+        return 1;
+    }
+
+    //Close
+    nvs_close(my_handle);
+    return 0;
+}
+
+int my_read_nvs(char* var_name, int32_t* var){
+    //Initialize NVS
+    esp_err_t err = nvs_flash_init();
+    if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND){
+        ESP_ERROR_CHECK(nvs_flash_erase());
+        err = nvs_flash_init();
+    }
+    if (err != ESP_OK) {
+        printf("<my_read_nvs> Error (%s) NVS flash init!\n", esp_err_to_name(err));
+        return -1;
+    }
+
+    //Open
+    nvs_handle_t my_handle;
+    err = nvs_open("storage", NVS_READWRITE, &my_handle);
+    if (err != ESP_OK) {
+        printf("<my_read_nvs> Error (%s) opening NVS handle!\n", esp_err_to_name(err));
+        return -1;
+    }
+
+    //Read NVS
+    err = nvs_get_i32(my_handle, var_name, var);
+    switch (err){
+        case ESP_OK:
+            printf("<my_read_nvs> Done, setted var %s=%ld in NVS.\n", var_name, *var);
+            //Close
+            nvs_close(my_handle);
+            return 0;
+
+        case ESP_ERR_NVS_NOT_FOUND:
+            printf("<my_read_nvs> The var %s is not initialized in NVS yet.\n", var_name);
+            //Close
+            nvs_close(my_handle);
+            return 1;
+
+        default:
+            printf("<my_read_nvs> Error (%s) reading from NVS!\n", esp_err_to_name(err));
+            //Close
+            nvs_close(my_handle);
+            return -1;
+    }
+}
+
+// Function for sending things to UART1
+static int uart1_printf(const char *str, va_list ap) {
+    char *buf;
+    vasprintf(&buf, str, ap);
+    uart_write_bytes(UART_NUM_1, buf, strlen(buf));
+    free(buf);
+    return 0;
+}
+
+// Setup of UART connections 0 and 1, and try to redirect logs to UART1 if asked
+static void uart_setup() {
+    uart_config_t uart_config = {
+        .baud_rate = 115200,
+        .data_bits = UART_DATA_8_BITS,
+        .parity = UART_PARITY_DISABLE,
+        .stop_bits = UART_STOP_BITS_1,
+        .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
+    };
+
+    uart_param_config(UART_NUM_0, &uart_config);
+    uart_param_config(UART_NUM_1, &uart_config);
+    uart_driver_install(UART_NUM_0, BUF_SIZE * 2, 0, 0, NULL, 0);
+    uart_driver_install(UART_NUM_1, BUF_SIZE * 2, 0, 0, NULL, 0);
+
+    // Redirect ESP log to UART1
+    if (REDIRECT_LOGS) {
+        esp_log_set_vprintf(uart1_printf);
+    }
+}
+
+void uart_write_warp(char* data_to_send){
+    uart_write_bytes(UART_NUM, (const char*) data_to_send, strlen(data_to_send));
+}
+
+void setup_N(void){
+    int err = my_read_nvs("N",&N);
+    if(err == -1){
+        printf("<setup_N> Error setting up window size.\n");
+        return;
+    }
+    if(err == 1){
+        if(my_write_nvs("N",N)!=0){
+            printf("<setup_N> Error initializing window size 'N' in NVS.\n");
+        }
+        return;
+    }
+}
+
+void set_N(void){
+    //ESP waits to receve size of meassurment window size
+    char new_N[5];
+    int r_len = 0;
+    while(1){
+        r_len = serial_read(new_N, 4);
+        if(r_len > 0){
+            //updates N; used for meassurment window size
+            N = atoi(new_N);
+            break;
+        }
+    }
+    //updates nvs window size value
+    my_write_nvs("N",N);
+}
+
+/**
+ * @brief Funcion que calcula la FFT de un arreglo y guarda el resultado inplace
+ *
+ * @param array Arreglo de elementos sobre los que se quiere calcular la FFT
+ * @param size Tamano del arreglo
+ * @param array_re Direccion del arreglo donde se guardara la parte real. Debe ser de tamano size
+ * @param array_im Direccion del arreglo donde se guardara la parte imaginaria. Debe ser de tamano size
+ */
+void FFT(float *array, int size, float *array_re, float *array_im) {
+    for (int k = 0; k < size; k++) {
+        float real = 0;
+        float imag = 0;
+
+        for (int n = 0; n < size; n++) {
+            //3.14159265358979323846
+            float angulo = 2 * M_PI * k * n / size;
+            float cos_angulo = cos(angulo);
+            float sin_angulo = -sin(angulo);
+
+            real += array[n] * cos_angulo;
+            imag += array[n] * sin_angulo;
+        }
+        real /= size;
+        imag /= size;
+        array_re[k] = real;
+        array_im[k] = imag;
+    }
+}
+
+void process_data(void){
+    //Obtener datos de sensores
+        //obtener datos aceleracion, 3 ejes
+            //calcular 5 peaks
+            //calcularRMS
+            //calcularFFT
+        //obtener datos gyroscopio, 3 ejes
+            //calcular 5 peaks
+            //calcularRMS
+            //calcularFFT
+    //mandar los datos
+}
+
 void app_main(void) {
     ESP_ERROR_CHECK(bmi_init());
     softreset();
@@ -796,7 +1002,65 @@ void app_main(void) {
     check_initialization();
     bmipowermode();
     internal_status();
+    uart_setup();
+
+    //initialize N var; used for meassurment window size.
+    setup_N();
+
+    //ESP sends "OK setup" message to syncronize with python app.
+    uart_write_warp("OK setup");
+    
+    //ESP waites "BEGIN" response to begin.
+    char BEGIN_response[6];
+    int r_len = 0;
+    while(1){
+        r_len = serial_read(BEGIN_response, 6);
+        if (r_len > 0){
+            if(strcmp(BEGIN_response, "BEGIN") == 0){
+                break;
+            }
+        }
+    }
+
+    //ESP sends window meassurment size (N var) to python app until "OK" response.
+    char OK_response[3];
+    int32_t* tmp = &N;
+    while(1){
+        uart_write_warp((char*) tmp);
+        vTaskDelay(pdMS_TO_TICKS(500));
+
+        r_len = serial_read(OK_response, 3);
+        if(r_len > 0){
+            if (strcmp(OK_response, "OK") == 0){
+                break;
+            }
+        }
+    }
+
+    //ESP enter loop waiting for operations
+    char selection[2];
+    while(1){
+        r_len = serial_read(selection, 2);
+        if(r_len > 0){
+            //if response is "1" -> beging data procesing
+            if(strcmp(selection, "1") == 0){
+                process_data();
+            }
+            //if response is "2" -> update meassurment window size used
+            if(strcmp(selection, "2") == 0){
+                set_N();
+            }
+            //if response is "3" -> end conection and restart ESP
+            if(strcmp(selection, "3") == 0){
+                break;
+            }
+        }
+        vTaskDelay(pdMS_TO_TICKS(1000));  // Delay for 1 second
+    }
+    end_conection();
+    /*
     printf("Comienza acceleration_lecture\n\n");
     acceleration_lecture();
     gyroscope_lecture();
+    */
 }
