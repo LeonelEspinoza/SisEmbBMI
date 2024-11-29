@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from PyQt5.QtWidgets import QApplication, QWidget
 import numpy as np
+import receiver
 
 class Canvas(FigureCanvas):
     def __init__(self,parent):
@@ -20,12 +21,23 @@ class Canvas(FigureCanvas):
         super().__init__(fig)
         self.setParent(parent)
 
-        t = np.arange(0.0, 2.0, 0.01)
-        s = 1 + np.sin(2*np.pi*t)
+        t = receiver.time_array
 
-        self.axis.plot(t,s)
-        self.axis.set(xlabel='time (s)', ylabel='voltage (mv)', title='nada')
+        self.lineAx, = self.axis.plot(t,receiver.fft_ax, color='r')
+        self.lineAy, = self.axis.plot(t,receiver.fft_ay, color='g')
+        self.lineAz, = self.axis.plot(t,receiver.fft_az, color='b')
+
+        self.axis2 = self.axis.twinx()
+
+        self.lineGx, = self.axis2.plot(t,receiver.fft_gx, color='m')
+        self.lineGy, = self.axis2.plot(t,receiver.fft_gy, color='y')
+        self.lineGz, = self.axis2.plot(t,receiver.fft_gz, color='o')
+        
+        self.axis.set(xlabel='tiempo', ylabel='aceleración fft', title='Mediciones FFT')
+        self.axis.set(ylabel='angulo fft')
         self.axis.grid()
+
+        fig.tight_layout()
 
 class Ui_FFT(QWidget):
     def setupUi(self, MainWindow):
@@ -42,10 +54,10 @@ class Ui_FFT(QWidget):
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout.setObjectName("horizontalLayout")
 
-        chart = Canvas(self)
-        self.horizontalLayout.addWidget(chart)
+        self.chart = Canvas(self)
+        self.horizontalLayout.addWidget(self.chart)
 
-        self.verticalLayoutWidget = QtWidgets.QWidget(self.centralwidget)
+        self.verticalLayoutWidget = QtWidgets.QWidget(self.horizontalLayoutWidget)
         self.verticalLayoutWidget.setGeometry(QtCore.QRect(743, 170, 77, 151))
         self.verticalLayoutWidget.setObjectName("verticalLayoutWidget")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.verticalLayoutWidget)
@@ -59,36 +71,48 @@ class Ui_FFT(QWidget):
         self.checkBox.setFont(font)
         self.checkBox.setObjectName("checkBox")
         self.verticalLayout.addWidget(self.checkBox)
-        self.checkBox_3 = QtWidgets.QCheckBox(self.verticalLayoutWidget)
-        font = QtGui.QFont()
-        font.setPointSize(12)
-        self.checkBox_3.setFont(font)
-        self.checkBox_3.setObjectName("checkBox_3")
-        self.verticalLayout.addWidget(self.checkBox_3)
+        self.checkBox.setChecked(True)
+
         self.checkBox_2 = QtWidgets.QCheckBox(self.verticalLayoutWidget)
         font = QtGui.QFont()
         font.setPointSize(12)
         self.checkBox_2.setFont(font)
         self.checkBox_2.setObjectName("checkBox_2")
         self.verticalLayout.addWidget(self.checkBox_2)
+        self.checkBox_2.setChecked(True)
+
+        self.checkBox_3 = QtWidgets.QCheckBox(self.verticalLayoutWidget)
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        self.checkBox_3.setFont(font)
+        self.checkBox_3.setObjectName("checkBox_3")
+        self.verticalLayout.addWidget(self.checkBox_3)
+        self.checkBox_3.setChecked(True)
+
         self.checkBox_4 = QtWidgets.QCheckBox(self.verticalLayoutWidget)
         font = QtGui.QFont()
         font.setPointSize(12)
         self.checkBox_4.setFont(font)
-        self.checkBox_4.setObjectName("checkBox_4")
-        self.verticalLayout.addWidget(self.checkBox_4)
+        self.checkBox_4.setObjectName("checkBox_2")
+        self.verticalLayout.addWidget(self.checkBox_2)
+        self.checkBox_4.setChecked(True)
+
         self.checkBox_5 = QtWidgets.QCheckBox(self.verticalLayoutWidget)
         font = QtGui.QFont()
         font.setPointSize(12)
         self.checkBox_5.setFont(font)
-        self.checkBox_5.setObjectName("checkBox_5")
-        self.verticalLayout.addWidget(self.checkBox_5)
+        self.checkBox_5.setObjectName("checkBox_2")
+        self.verticalLayout.addWidget(self.checkBox_2)
+        self.checkBox_5.setChecked(True)
+
         self.checkBox_6 = QtWidgets.QCheckBox(self.verticalLayoutWidget)
         font = QtGui.QFont()
         font.setPointSize(12)
         self.checkBox_6.setFont(font)
         self.checkBox_6.setObjectName("checkBox_2")
-        self.verticalLayout.addWidget(self.checkBox_6)
+        self.verticalLayout.addWidget(self.checkBox_2)
+        self.checkBox_6.setChecked(True)
+
         self.pushButton = QtWidgets.QPushButton(self.verticalLayoutWidget)
         font = QtGui.QFont()
         font.setPointSize(10)
@@ -105,6 +129,58 @@ class Ui_FFT(QWidget):
 
         self.pushButton.clicked.connect(self.volverMenu)
         self.pushButton.clicked.connect(MainWindow.close)
+
+        self.checkBox.stateChanged.connect(self.checkbox_ax)
+        self.checkBox_2.stateChanged.connect(self.checkbox_ay)
+        self.checkBox_3.stateChanged.connect(self.checkbox_az)
+
+    def checkbox_ax(self, state):
+        if state:
+            self.chart.lineAx, = self.chart.axis.plot(receiver.fft_ax, color='r')
+            self.chart.draw()
+        else:
+            self.chart.lineAx.remove()
+            self.chart.draw()
+    
+    def checkbox_ay(self, state):
+        if state:
+            self.chart.lineAy, = self.chart.axis.plot(receiver.fft_ay, color='g')
+            self.chart.draw()
+        else:
+            self.chart.lineAy.remove()
+            self.chart.draw()
+            
+    def checkbox_az(self, state):
+        if state:
+            self.chart.lineAz, = self.chart.axis.plot(receiver.fft_az, color='b')
+            self.chart.draw()
+        else:
+            self.chart.lineAz.remove()
+            self.chart.draw()
+    
+    def checkbox_gx(self, state):
+        if state:
+            self.chart.lineGx, = self.chart.axis.plot(receiver.fft_gx, color='m')
+            self.chart.draw()
+        else:
+            self.chart.lineGx.remove()
+            self.chart.draw()
+    
+    def checkbox_gy(self, state):
+        if state:
+            self.chart.lineGy, = self.chart.axis.plot(receiver.fft_gy, color='y')
+            self.chart.draw()
+        else:
+            self.chart.lineGy.remove()
+            self.chart.draw()
+    
+    def checkbox_gz(self, state):
+        if state:
+            self.chart.lineGz, = self.chart.axis.plot(receiver.fft_gz, color='o')
+            self.chart.draw()
+        else:
+            self.chart.lineGz.remove()
+            self.chart.draw()
     
     def volverMenu(self):
         from main_app import Ui_MainWindow
@@ -115,15 +191,14 @@ class Ui_FFT(QWidget):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "Gráfico Giroscopio"))
-        self.checkBox.setText(_translate("MainWindow", "A_eje X"))
-        self.checkBox_3.setText(_translate("MainWindow", "A_eje Y"))
-        self.checkBox_2.setText(_translate("MainWindow", "A_eje Z"))
-        self.checkBox_4.setText(_translate("MainWindow", "G_eje X"))
-        self.checkBox_5.setText(_translate("MainWindow", "G_eje Y"))
-        self.checkBox_6.setText(_translate("MainWindow", "G_eje Z"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "Gráfico Aceleración"))
+        self.checkBox.setText(_translate("MainWindow", "a_eje X"))
+        self.checkBox_2.setText(_translate("MainWindow", "a_eje Y"))
+        self.checkBox_3.setText(_translate("MainWindow", "a_eje Z"))
+        self.checkBox_4.setText(_translate("MainWindow", "g_eje X"))
+        self.checkBox_5.setText(_translate("MainWindow", "g_eje Y"))
+        self.checkBox_6.setText(_translate("MainWindow", "g_eje Z"))
         self.pushButton.setText(_translate("MainWindow", "Volver"))
-
 
 if __name__ == "__main__":
     import sys

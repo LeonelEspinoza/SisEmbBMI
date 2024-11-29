@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from PyQt5.QtWidgets import QApplication, QWidget
 import numpy as np
+import receiver
 
 class Canvas(FigureCanvas):
     def __init__(self,parent):
@@ -20,18 +21,20 @@ class Canvas(FigureCanvas):
         super().__init__(fig)
         self.setParent(parent)
 
-        t = np.arange(0.0, 2.0, 0.01)
-        s = 1 + np.sin(2*np.pi*t)
+        t = receiver.time_array
 
-        self.axis.plot(t,s)
-        self.axis.set(xlabel='time (s)', ylabel='voltage (mv)', title='nada')
+        self.lineGx, = self.axis.plot(t,receiver.gx,color='r')
+        self.lineGy, = self.axis.plot(t,receiver.gy,color='g')
+        self.lineGz, = self.axis.plot(t,receiver.gz,color='b')
+
+        self.axis.set(xlabel='tiempo (s)', ylabel='angulo', title='Medidas Giroscopio')
         self.axis.grid()
 
 class Ui_GraphGyroscope(QWidget):
-    def setupUi(self, GraphAcceleration):
-        GraphAcceleration.setObjectName("GraphAcceleration")
-        GraphAcceleration.resize(820, 600)
-        self.centralwidget = QtWidgets.QWidget(GraphAcceleration)
+    def setupUi(self, GraphGyroscope):
+        GraphGyroscope.setObjectName("GraphGyroscope")
+        GraphGyroscope.resize(820, 600)
+        self.centralwidget = QtWidgets.QWidget(GraphGyroscope)
         self.centralwidget.setObjectName("centralwidget")
 
         self.horizontalLayoutWidget = QtWidgets.QWidget(self.centralwidget)
@@ -58,34 +61,66 @@ class Ui_GraphGyroscope(QWidget):
         self.checkBox.setFont(font)
         self.checkBox.setObjectName("checkBox")
         self.verticalLayout.addWidget(self.checkBox)
-        self.checkBox_3 = QtWidgets.QCheckBox(self.verticalLayoutWidget)
-        font = QtGui.QFont()
-        font.setPointSize(12)
-        self.checkBox_3.setFont(font)
-        self.checkBox_3.setObjectName("checkBox_3")
-        self.verticalLayout.addWidget(self.checkBox_3)
         self.checkBox_2 = QtWidgets.QCheckBox(self.verticalLayoutWidget)
         font = QtGui.QFont()
         font.setPointSize(12)
         self.checkBox_2.setFont(font)
         self.checkBox_2.setObjectName("checkBox_2")
         self.verticalLayout.addWidget(self.checkBox_2)
+        self.checkBox_3 = QtWidgets.QCheckBox(self.verticalLayoutWidget)
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        self.checkBox_3.setFont(font)
+        self.checkBox_3.setObjectName("checkBox_3")
+        self.verticalLayout.addWidget(self.checkBox_3)
         self.pushButton = QtWidgets.QPushButton(self.verticalLayoutWidget)
         font = QtGui.QFont()
         font.setPointSize(10)
         self.pushButton.setFont(font)
         self.pushButton.setObjectName("pushButton")
         self.verticalLayout.addWidget(self.pushButton)
-        GraphAcceleration.setCentralWidget(self.centralwidget)
-        self.statusbar = QtWidgets.QStatusBar(GraphAcceleration)
+        GraphGyroscope.setCentralWidget(self.centralwidget)
+        self.statusbar = QtWidgets.QStatusBar(GraphGyroscope)
         self.statusbar.setObjectName("statusbar")
-        GraphAcceleration.setStatusBar(self.statusbar)
+        GraphGyroscope.setStatusBar(self.statusbar)
 
-        self.retranslateUi(GraphAcceleration)
-        QtCore.QMetaObject.connectSlotsByName(GraphAcceleration)
+        self.retranslateUi(GraphGyroscope)
+        QtCore.QMetaObject.connectSlotsByName(GraphGyroscope)
 
         self.pushButton.clicked.connect(self.volverMenu)
-        self.pushButton.clicked.connect(GraphAcceleration.close)
+        self.pushButton.clicked.connect(GraphGyroscope.close)
+
+        self.checkBox.setChecked(True)
+        self.checkBox_2.setChecked(True)
+        self.checkBox_3.setChecked(True)
+
+        self.checkBox.stateCahnged.connect(self.checkBox_gx)
+        self.checkBox_2.stateCahnged.connect(self.checkBox_gy)
+        self.checkBox_3.stateCahnged.connect(self.checkBox_gz)
+
+    def checkbox_gx(self, state):
+        if state:
+            self.chart.lineGx, = self.chart.axis.plot(receiver.gx, color='r')
+            self.chart.draw()
+        else:
+            self.chart.lineGx.remove()
+            self.chart.draw()
+    
+    def checkbox_gy(self, state):
+        if state:
+            self.chart.lineGy, = self.chart.axis.plot(receiver.gy, color='g')
+            self.chart.draw()
+        else:
+            self.chart.lineGy.remove()
+            self.chart.draw()
+            
+    def checkbox_gz(self, state):
+        if state:
+            self.chart.lineGz, = self.chart.axis.plot(receiver.gz, color='b')
+            self.chart.draw()
+        else:
+            self.chart.lineGz.remove()
+            self.chart.draw()
     
     def volverMenu(self):
         from main_app import Ui_MainWindow
@@ -94,20 +129,20 @@ class Ui_GraphGyroscope(QWidget):
         self.ui.setupUi(self.window2)
         self.window2.show()
 
-    def retranslateUi(self, GraphAcceleration):
+    def retranslateUi(self, GraphGyroscope):
         _translate = QtCore.QCoreApplication.translate
-        GraphAcceleration.setWindowTitle(_translate("GraphAcceleration", "Gráfico Giroscopio"))
-        self.checkBox.setText(_translate("GraphAcceleration", "eje X"))
-        self.checkBox_3.setText(_translate("GraphAcceleration", "eje Y"))
-        self.checkBox_2.setText(_translate("GraphAcceleration", "eje Z"))
-        self.pushButton.setText(_translate("GraphAcceleration", "Volver"))
+        GraphGyroscope.setWindowTitle(_translate("GraphGyroscope", "Gráfico Giroscopio"))
+        self.checkBox.setText(_translate("GraphGyroscope", "eje X"))
+        self.checkBox_2.setText(_translate("GraphGyroscope", "eje Y"))
+        self.checkBox_3.setText(_translate("GraphGyroscope", "eje Z"))
+        self.pushButton.setText(_translate("GraphGyroscope", "Volver"))
 
 
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
-    GraphAcceleration = QtWidgets.QMainWindow()
+    GraphGyroscope = QtWidgets.QMainWindow()
     ui = Ui_GraphGyroscope()
-    ui.setupUi(GraphAcceleration)
-    GraphAcceleration.show()
+    ui.setupUi(GraphGyroscope)
+    GraphGyroscope.show()
     sys.exit(app.exec_())

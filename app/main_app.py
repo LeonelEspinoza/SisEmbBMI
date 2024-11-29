@@ -14,9 +14,10 @@ from win_aceleracion import Ui_GraphAcceleration
 from win_giroscopio import Ui_GraphGyroscope
 from win_rms import Ui_RMS
 from win_fft import Ui_FFT
+from win_5peak import Ui_5Peaks
+from win_fft_i import Ui_FFT_i
 
-import time
-#import receiver
+import receiver
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -75,12 +76,28 @@ class Ui_MainWindow(object):
         font.setPointSize(10)
         self.pushButton_6.setFont(font)
         self.verticalLayout.addWidget(self.pushButton_6)
+
+        self.pushButton_8 = QtWidgets.QPushButton(self.verticalLayoutWidget)
+        font = QtGui.QFont()
+        font.setPointSize(10)
+        self.pushButton_8.setFont(font)
+        self.pushButton_8.setObjectName("pushButton_8")
+        self.verticalLayout.addWidget(self.pushButton_8)
+
         self.pushButton_7 = QtWidgets.QPushButton(self.verticalLayoutWidget)
         self.pushButton_7.setObjectName("pushButton_7")
         font = QtGui.QFont()
         font.setPointSize(10)
         self.pushButton_7.setFont(font)
         self.verticalLayout.addWidget(self.pushButton_7)
+
+        self.pushButton_9 = QtWidgets.QPushButton(self.verticalLayoutWidget)
+        font = QtGui.QFont()
+        font.setPointSize(10)
+        self.pushButton_9.setFont(font)
+        self.pushButton_9.setObjectName("pushButton_9")
+        self.verticalLayout.addWidget(self.pushButton_9)
+
         self.pushButton_2 = QtWidgets.QPushButton(self.verticalLayoutWidget)
         font = QtGui.QFont()
         font.setPointSize(10)
@@ -94,6 +111,7 @@ class Ui_MainWindow(object):
         self.pushButton_4.setObjectName("pushButton_4")
         self.verticalLayout.addWidget(self.pushButton_4)
         MainWindow.setCentralWidget(self.centralwidget)
+
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
@@ -118,6 +136,12 @@ class Ui_MainWindow(object):
 
         self.pushButton_4.clicked.connect(self.cerrarConexion)
         self.pushButton_4.clicked.connect(MainWindow.close)
+
+        self.pushButton_8.clicked.connect(self.grafico5_peaks)
+        self.pushButton_8.clicked.connect(MainWindow.close)
+
+        self.pushButton_9.clicked.connect(self.graficoFFT_i)
+        self.pushButton_9.clicked.connect(MainWindow.close)
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -146,9 +170,21 @@ class Ui_MainWindow(object):
         self.ui.setupUi(self.window2)
         self.window2.show()
     
+    def grafico5_peaks(self):
+        self.window2 = QtWidgets.QMainWindow()
+        self.ui = Ui_5Peaks()
+        self.ui.setupUi(self.window2)
+        self.window2.show()
+    
     def graficoFFT(self):
         self.window2 = QtWidgets.QMainWindow()
         self.ui = Ui_FFT()
+        self.ui.setupUi(self.window2)
+        self.window2.show()
+    
+    def graficoFFT_i(self):
+        self.window2 = QtWidgets.QMainWindow()
+        self.ui = Ui_FFT_i()
         self.ui.setupUi(self.window2)
         self.window2.show()
     
@@ -168,7 +204,9 @@ class Ui_MainWindow(object):
         self.pushButton_3.setText(_translate("MainWindow", "Gráfico aceleración "))
         self.pushButton_5.setText(_translate("MainWindow", "Gráfico giroscopio"))
         self.pushButton_6.setText(_translate("MainWindow", "Gráfico RMS"))
-        self.pushButton_7.setText(_translate("MainWindow", "Gráfico FFT"))
+        self.pushButton_8.setText(_translate("MainWindow", "Gráfico 5-peaks"))
+        self.pushButton_7.setText(_translate("MainWindow", "Gráfico FFT reales"))
+        self.pushButton_9.setText(_translate("MainWindow", "Gráfico FFT imaginarios"))
         self.pushButton_2.setText(_translate("MainWindow", "Cambiar tamaño ventana"))
         self.pushButton_4.setText(_translate("MainWindow", "Cerrar conexión"))
 

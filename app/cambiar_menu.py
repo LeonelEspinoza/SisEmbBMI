@@ -9,7 +9,7 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-#import receiver
+import receiver
 
 class Ui_ChangeSizeWindow(object):
     def setupUi(self, MainWindow):

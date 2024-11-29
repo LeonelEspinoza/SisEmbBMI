@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'grafico_aceleracion.ui'
+# Form implementation generated from reading ui file 'rms.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.11
 #
@@ -23,19 +23,27 @@ class Canvas(FigureCanvas):
 
         t = receiver.time_array
 
-        self.lineAx, = self.axis.plot(t,receiver.ax, color='r')
-        self.lineAy, = self.axis.plot(t,receiver.ay, color='g')
-        self.lineAz, = self.axis.plot(t,receiver.az, color='b')
+        self.lineAx, = self.axis.plot(t,receiver.peak_ax, color='r')
+        self.lineAy, = self.axis.plot(t,receiver.peak_ay, color='g')
+        self.lineAz, = self.axis.plot(t,receiver.peak_az, color='b')
 
-        self.axis.set(xlabel='tiempo', ylabel='aceleración', title='Medias Acelerometro')
+        self.axis2 = self.axis.twinx()
+
+        self.lineGx, = self.axis2.plot(t,receiver.peak_gx, color='m')
+        self.lineGy, = self.axis2.plot(t,receiver.peak_gy, color='y')
+        self.lineGz, = self.axis2.plot(t,receiver.peak_gz, color='o')
+        
+        self.axis.set(xlabel='tiempo', ylabel='aceleración', title='Medidas RMS')
+        self.axis.set(ylabel='angulo')
         self.axis.grid()
 
+        fig.tight_layout()
 
-class Ui_GraphAcceleration(QWidget):
-    def setupUi(self, GraphAcceleration):
-        GraphAcceleration.setObjectName("GraphAcceleration")
-        GraphAcceleration.resize(820, 600)
-        self.centralwidget = QtWidgets.QWidget(GraphAcceleration)
+class Ui_5Peaks(QWidget):
+    def setupUi(self, Graph5Peaks):
+        Graph5Peaks.setObjectName("Graph5Peaks")
+        Graph5Peaks.resize(820, 600)
+        self.centralwidget = QtWidgets.QWidget(Graph5Peaks)
         self.centralwidget.setObjectName("centralwidget")
 
         self.horizontalLayoutWidget = QtWidgets.QWidget(self.centralwidget)
@@ -63,6 +71,7 @@ class Ui_GraphAcceleration(QWidget):
         self.checkBox.setObjectName("checkBox")
         self.verticalLayout.addWidget(self.checkBox)
         self.checkBox.setChecked(True)
+
         self.checkBox_2 = QtWidgets.QCheckBox(self.verticalLayoutWidget)
         font = QtGui.QFont()
         font.setPointSize(12)
@@ -70,6 +79,7 @@ class Ui_GraphAcceleration(QWidget):
         self.checkBox_2.setObjectName("checkBox_2")
         self.verticalLayout.addWidget(self.checkBox_2)
         self.checkBox_2.setChecked(True)
+
         self.checkBox_3 = QtWidgets.QCheckBox(self.verticalLayoutWidget)
         font = QtGui.QFont()
         font.setPointSize(12)
@@ -77,22 +87,47 @@ class Ui_GraphAcceleration(QWidget):
         self.checkBox_3.setObjectName("checkBox_3")
         self.verticalLayout.addWidget(self.checkBox_3)
         self.checkBox_3.setChecked(True)
+
+        self.checkBox_4 = QtWidgets.QCheckBox(self.verticalLayoutWidget)
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        self.checkBox_4.setFont(font)
+        self.checkBox_4.setObjectName("checkBox_2")
+        self.verticalLayout.addWidget(self.checkBox_2)
+        self.checkBox_4.setChecked(True)
+
+        self.checkBox_5 = QtWidgets.QCheckBox(self.verticalLayoutWidget)
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        self.checkBox_5.setFont(font)
+        self.checkBox_5.setObjectName("checkBox_2")
+        self.verticalLayout.addWidget(self.checkBox_2)
+        self.checkBox_5.setChecked(True)
+
+        self.checkBox_6 = QtWidgets.QCheckBox(self.verticalLayoutWidget)
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        self.checkBox_6.setFont(font)
+        self.checkBox_6.setObjectName("checkBox_2")
+        self.verticalLayout.addWidget(self.checkBox_2)
+        self.checkBox_6.setChecked(True)
+
         self.pushButton = QtWidgets.QPushButton(self.verticalLayoutWidget)
         font = QtGui.QFont()
         font.setPointSize(10)
         self.pushButton.setFont(font)
         self.pushButton.setObjectName("pushButton")
         self.verticalLayout.addWidget(self.pushButton)
-        GraphAcceleration.setCentralWidget(self.centralwidget)
-        self.statusbar = QtWidgets.QStatusBar(GraphAcceleration)
+        Graph5Peaks.setCentralWidget(self.centralwidget)
+        self.statusbar = QtWidgets.QStatusBar(Graph5Peaks)
         self.statusbar.setObjectName("statusbar")
-        GraphAcceleration.setStatusBar(self.statusbar)
+        Graph5Peaks.setStatusBar(self.statusbar)
 
-        self.retranslateUi(GraphAcceleration)
-        QtCore.QMetaObject.connectSlotsByName(GraphAcceleration)
+        self.retranslateUi(Graph5Peaks)
+        QtCore.QMetaObject.connectSlotsByName(Graph5Peaks)
 
         self.pushButton.clicked.connect(self.volverMenu)
-        self.pushButton.clicked.connect(GraphAcceleration.close)
+        self.pushButton.clicked.connect(Graph5Peaks.close)
 
         self.checkBox.stateChanged.connect(self.checkbox_ax)
         self.checkBox_2.stateChanged.connect(self.checkbox_ay)
@@ -100,7 +135,7 @@ class Ui_GraphAcceleration(QWidget):
 
     def checkbox_ax(self, state):
         if state:
-            self.chart.lineAx, = self.chart.axis.plot(receiver.ax, color='r')
+            self.chart.lineAx, = self.chart.axis.plot(receiver.peak_ax, color='r')
             self.chart.draw()
         else:
             self.chart.lineAx.remove()
@@ -108,7 +143,7 @@ class Ui_GraphAcceleration(QWidget):
     
     def checkbox_ay(self, state):
         if state:
-            self.chart.lineAy, = self.chart.axis.plot(receiver.ax, color='g')
+            self.chart.lineAy, = self.chart.axis.plot(receiver.peak_ay, color='g')
             self.chart.draw()
         else:
             self.chart.lineAy.remove()
@@ -116,10 +151,34 @@ class Ui_GraphAcceleration(QWidget):
             
     def checkbox_az(self, state):
         if state:
-            self.chart.lineAz, = self.chart.axis.plot(receiver.ax, color='b')
+            self.chart.lineAz, = self.chart.axis.plot(receiver.peak_az, color='b')
             self.chart.draw()
         else:
             self.chart.lineAz.remove()
+            self.chart.draw()
+    
+    def checkbox_gx(self, state):
+        if state:
+            self.chart.lineGx, = self.chart.axis.plot(receiver.peak_gx, color='m')
+            self.chart.draw()
+        else:
+            self.chart.lineGx.remove()
+            self.chart.draw()
+    
+    def checkbox_gy(self, state):
+        if state:
+            self.chart.lineGy, = self.chart.axis.plot(receiver.peak_gy, color='y')
+            self.chart.draw()
+        else:
+            self.chart.lineGy.remove()
+            self.chart.draw()
+    
+    def checkbox_gz(self, state):
+        if state:
+            self.chart.lineGz, = self.chart.axis.plot(receiver.peak_gz, color='o')
+            self.chart.draw()
+        else:
+            self.chart.lineGz.remove()
             self.chart.draw()
     
     def volverMenu(self):
@@ -129,20 +188,23 @@ class Ui_GraphAcceleration(QWidget):
         self.ui.setupUi(self.window2)
         self.window2.show()
 
-    def retranslateUi(self, GraphAcceleration):
+    def retranslateUi(self, Graph5Peaks):
         _translate = QtCore.QCoreApplication.translate
-        GraphAcceleration.setWindowTitle(_translate("GraphAcceleration", "Gráfico Aceleración"))
-        self.checkBox.setText(_translate("GraphAcceleration", "eje X"))
-        self.checkBox_2.setText(_translate("GraphAcceleration", "eje Y"))
-        self.checkBox_3.setText(_translate("GraphAcceleration", "eje Z"))
-        self.pushButton.setText(_translate("GraphAcceleration", "Volver"))
+        Graph5Peaks.setWindowTitle(_translate("Graph5Peaks", "Gráfico Aceleración"))
+        self.checkBox.setText(_translate("Graph5Peaks", "a_eje X"))
+        self.checkBox_2.setText(_translate("Graph5Peaks", "a_eje Y"))
+        self.checkBox_3.setText(_translate("Graph5Peaks", "a_eje Z"))
+        self.checkBox_4.setText(_translate("Graph5Peaks", "g_eje X"))
+        self.checkBox_5.setText(_translate("Graph5Peaks", "g_eje Y"))
+        self.checkBox_6.setText(_translate("Graph5Peaks", "g_eje Z"))
+        self.pushButton.setText(_translate("Graph5Peaks", "Volver"))
 
 
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
-    GraphAcceleration = QtWidgets.QMainWindow()
-    ui = Ui_GraphAcceleration()
-    ui.setupUi(GraphAcceleration)
-    GraphAcceleration.show()
+    MainWindow = QtWidgets.QMainWindow()
+    ui = Ui_5Peaks()
+    ui.setupUi(MainWindow)
+    MainWindow.show()
     sys.exit(app.exec_())

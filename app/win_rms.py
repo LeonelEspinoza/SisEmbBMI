@@ -13,22 +13,32 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from PyQt5.QtWidgets import QApplication, QWidget
 import numpy as np
+import receiver
+
 class Canvas(FigureCanvas):
     def __init__(self,parent):
         fig, self.axis = plt.subplots(figsize=(3,2),dpi=100)
         super().__init__(fig)
         self.setParent(parent)
 
-        t = np.arange(0.0, 2.0, 0.01)
-        s = 1 + np.sin(2*np.pi*t)
+        rms = ["rms_ax","rms_ay","rms_az","rms_gx","rms_gy","rms_gz"]
+        count = receiver.rms_a_g
+        bar_label = ["aceleracion","_aceleracion","_aceleracion","giroscopio","_giroscopio","_giroscopio"]
+        bar_color = ["tab:red","tab:red","tab:red","tab:blue","tab:blue","tab:blue"]
+        
+        self.axis.bar(rms,count,label=bar_label,color=bar_color)
 
-        self.axis.plot(t,s)
-        self.axis.set(xlabel='time (s)', ylabel='voltage (mv)', title='nada')
-        self.axis.grid()
+        self.axis.set(xlabel='RMS', ylabel='valores', title='Medicion de RMS')
+
+        #self.axis.plot(t,s)
+        #self.axis.set(xlabel='time (s)', ylabel='voltage (mv)', title='nada')
+        #self.axis.grid()
 
 
 class Ui_RMS(QWidget):
     def setupUi(self, MainWindow):
+        self.array = []
+
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(820, 600)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
@@ -45,49 +55,12 @@ class Ui_RMS(QWidget):
         self.horizontalLayout.addWidget(chart)
 
         self.verticalLayoutWidget = QtWidgets.QWidget(self.centralwidget)
-        self.verticalLayoutWidget.setGeometry(QtCore.QRect(743, 170, 77, 151))
+        #original
+        #self.verticalLayoutWidget.setGeometry(QtCore.QRect(743, 170, 77, 151))
+        self.verticalLayoutWidget.setGeometry(QtCore.QRect(379, 495, 77, 151))
         self.verticalLayoutWidget.setObjectName("verticalLayoutWidget")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.verticalLayoutWidget)
-        self.verticalLayout.setContentsMargins(0, 0, 0, 0)
-        self.verticalLayout.setSpacing(0)
-        self.verticalLayout.setObjectName("verticalLayout")
-        self.checkBox = QtWidgets.QCheckBox(self.verticalLayoutWidget)
-        self.checkBox.setBaseSize(QtCore.QSize(10, 10))
-        font = QtGui.QFont()
-        font.setPointSize(12)
-        self.checkBox.setFont(font)
-        self.checkBox.setObjectName("checkBox")
-        self.verticalLayout.addWidget(self.checkBox)
-        self.checkBox_3 = QtWidgets.QCheckBox(self.verticalLayoutWidget)
-        font = QtGui.QFont()
-        font.setPointSize(12)
-        self.checkBox_3.setFont(font)
-        self.checkBox_3.setObjectName("checkBox_3")
-        self.verticalLayout.addWidget(self.checkBox_3)
-        self.checkBox_2 = QtWidgets.QCheckBox(self.verticalLayoutWidget)
-        font = QtGui.QFont()
-        font.setPointSize(12)
-        self.checkBox_2.setFont(font)
-        self.checkBox_2.setObjectName("checkBox_2")
-        self.verticalLayout.addWidget(self.checkBox_2)
-        self.checkBox_4 = QtWidgets.QCheckBox(self.verticalLayoutWidget)
-        font = QtGui.QFont()
-        font.setPointSize(12)
-        self.checkBox_4.setFont(font)
-        self.checkBox_4.setObjectName("checkBox_4")
-        self.verticalLayout.addWidget(self.checkBox_4)
-        self.checkBox_5 = QtWidgets.QCheckBox(self.verticalLayoutWidget)
-        font = QtGui.QFont()
-        font.setPointSize(12)
-        self.checkBox_5.setFont(font)
-        self.checkBox_5.setObjectName("checkBox_5")
-        self.verticalLayout.addWidget(self.checkBox_5)
-        self.checkBox_6 = QtWidgets.QCheckBox(self.verticalLayoutWidget)
-        font = QtGui.QFont()
-        font.setPointSize(12)
-        self.checkBox_6.setFont(font)
-        self.checkBox_6.setObjectName("checkBox_2")
-        self.verticalLayout.addWidget(self.checkBox_6)
+
         self.pushButton = QtWidgets.QPushButton(self.verticalLayoutWidget)
         font = QtGui.QFont()
         font.setPointSize(10)
@@ -104,6 +77,7 @@ class Ui_RMS(QWidget):
 
         self.pushButton.clicked.connect(self.volverMenu)
         self.pushButton.clicked.connect(MainWindow.close)
+
     
     def volverMenu(self):
         from main_app import Ui_MainWindow
@@ -115,12 +89,6 @@ class Ui_RMS(QWidget):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "Gráfico Giroscopio"))
-        self.checkBox.setText(_translate("MainWindow", "A_eje X"))
-        self.checkBox_3.setText(_translate("MainWindow", "A_eje Y"))
-        self.checkBox_2.setText(_translate("MainWindow", "A_eje Z"))
-        self.checkBox_4.setText(_translate("MainWindow", "G_eje X"))
-        self.checkBox_5.setText(_translate("MainWindow", "G_eje Y"))
-        self.checkBox_6.setText(_translate("MainWindow", "G_eje Z"))
         self.pushButton.setText(_translate("MainWindow", "Volver"))
 
 
@@ -133,3 +101,4 @@ if __name__ == "__main__":
     ui.setupUi(MainWindow)
     MainWindow.show()
     sys.exit(app.exec_())
+

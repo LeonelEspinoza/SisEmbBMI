@@ -32,6 +32,42 @@ def send_end_message():
     end_message = pack('4s', 'END\0'.encode())
     ser.write(end_message)
 
+
+window_size = 0
+#wait for OK_setup
+while True:
+    if ser.in_waiting > 0:
+        try:
+            response = receive_data()
+            response = unpack("s", response)
+        except:
+            continue
+        finally:
+            if str(response.rfind('OK setup') == -1):
+                continue
+            break
+
+#Enviar mensaje 'BEGIN'
+message = pack('6s','BEGIN\0'.encode())
+send_message(message)
+
+#wait for window size in NVS
+while True:
+    if ser.is_waiting > 0:
+        try:
+            window_size_bytes = ser.read(4)
+            window_size_bytes = unpack("i", window_size_bytes)
+            window_size = int.from_bytes(window_size_bytes)
+        except:
+            continue
+        finally:
+            if window_size < 1:
+                continue
+            message = pack ("3s", 'OK\0'.encode())
+            send_message(message)
+            break
+
+
 # # Se lee data por la conexion serial
 # counter = 0
 while True:
