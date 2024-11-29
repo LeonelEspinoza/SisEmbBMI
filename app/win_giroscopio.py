@@ -23,9 +23,9 @@ class Canvas(FigureCanvas):
 
         t = receiver.time_array
 
-        self.lineGx, = self.axis.plot(t,receiver.gx,color='r')
-        self.lineGy, = self.axis.plot(t,receiver.gy,color='g')
-        self.lineGz, = self.axis.plot(t,receiver.gz,color='b')
+        self.lineGx, = self.axis.plot(t,receiver.gx, color='r')
+        self.lineGy, = self.axis.plot(t,receiver.gy, color='g')
+        self.lineGz, = self.axis.plot(t,receiver.gz, color='b')
 
         self.axis.set(xlabel='tiempo (s)', ylabel='angulo', title='Medidas Giroscopio')
         self.axis.grid()
@@ -44,8 +44,8 @@ class Ui_GraphGyroscope(QWidget):
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout.setObjectName("horizontalLayout")
 
-        chart = Canvas(self)
-        self.horizontalLayout.addWidget(chart)
+        self.chart = Canvas(self)
+        self.horizontalLayout.addWidget(self.chart)
 
         self.verticalLayoutWidget = QtWidgets.QWidget(self.centralwidget)
         self.verticalLayoutWidget.setGeometry(QtCore.QRect(743, 170, 77, 151))
@@ -94,9 +94,9 @@ class Ui_GraphGyroscope(QWidget):
         self.checkBox_2.setChecked(True)
         self.checkBox_3.setChecked(True)
 
-        self.checkBox.stateCahnged.connect(self.checkBox_gx)
-        self.checkBox_2.stateCahnged.connect(self.checkBox_gy)
-        self.checkBox_3.stateCahnged.connect(self.checkBox_gz)
+        self.checkBox.stateChanged.connect(self.checkbox_gx)
+        self.checkBox_2.stateChanged.connect(self.checkbox_gy)
+        self.checkBox_3.stateChanged.connect(self.checkbox_gz)
 
     def checkbox_gx(self, state):
         if state:

@@ -31,7 +31,7 @@ class Canvas(FigureCanvas):
 
         self.lineGx, = self.axis2.plot(t,receiver.ffti_gx, color='m')
         self.lineGy, = self.axis2.plot(t,receiver.ffti_gy, color='y')
-        self.lineGz, = self.axis2.plot(t,receiver.ffti_gz, color='o')
+        self.lineGz, = self.axis2.plot(t,receiver.ffti_gz, color='c')
         
         self.axis.set(xlabel='tiempo', ylabel='aceleración fft', title='Mediciones FFT_I')
         self.axis.set(ylabel='angulo fft')
@@ -93,24 +93,24 @@ class Ui_FFT_i(QWidget):
         font = QtGui.QFont()
         font.setPointSize(12)
         self.checkBox_4.setFont(font)
-        self.checkBox_4.setObjectName("checkBox_2")
-        self.verticalLayout.addWidget(self.checkBox_2)
+        self.checkBox_4.setObjectName("checkBox_4")
+        self.verticalLayout.addWidget(self.checkBox_4)
         self.checkBox_4.setChecked(True)
 
         self.checkBox_5 = QtWidgets.QCheckBox(self.verticalLayoutWidget)
         font = QtGui.QFont()
         font.setPointSize(12)
         self.checkBox_5.setFont(font)
-        self.checkBox_5.setObjectName("checkBox_2")
-        self.verticalLayout.addWidget(self.checkBox_2)
+        self.checkBox_5.setObjectName("checkBox_5")
+        self.verticalLayout.addWidget(self.checkBox_5)
         self.checkBox_5.setChecked(True)
 
         self.checkBox_6 = QtWidgets.QCheckBox(self.verticalLayoutWidget)
         font = QtGui.QFont()
         font.setPointSize(12)
         self.checkBox_6.setFont(font)
-        self.checkBox_6.setObjectName("checkBox_2")
-        self.verticalLayout.addWidget(self.checkBox_2)
+        self.checkBox_6.setObjectName("checkBox_6")
+        self.verticalLayout.addWidget(self.checkBox_6)
         self.checkBox_6.setChecked(True)
 
         self.pushButton = QtWidgets.QPushButton(self.verticalLayoutWidget)
@@ -133,6 +133,9 @@ class Ui_FFT_i(QWidget):
         self.checkBox.stateChanged.connect(self.checkbox_ax)
         self.checkBox_2.stateChanged.connect(self.checkbox_ay)
         self.checkBox_3.stateChanged.connect(self.checkbox_az)
+        self.checkBox_4.stateChanged.connect(self.checkbox_gx)
+        self.checkBox_5.stateChanged.connect(self.checkbox_gy)
+        self.checkBox_6.stateChanged.connect(self.checkbox_gz)
 
     def checkbox_ax(self, state):
         if state:
@@ -176,7 +179,7 @@ class Ui_FFT_i(QWidget):
     
     def checkbox_gz(self, state):
         if state:
-            self.chart.lineGz, = self.chart.axis.plot(receiver.ffti_gz, color='o')
+            self.chart.lineGz, = self.chart.axis.plot(receiver.ffti_gz, color='c')
             self.chart.draw()
         else:
             self.chart.lineGz.remove()

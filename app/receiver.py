@@ -72,45 +72,6 @@ def make_f(size):
     strf = "f" * size
     return strf
 
-
-#____________________________________________________________
-#   MAIN
-#____________________________________________________________
-
-window_size = 0
-#wait for OK_setup
-while True:
-    if ser.in_waiting > 0:
-        try:
-            response = ser.readline()
-            response = unpack("s", response)
-        except:
-            continue
-        finally:
-            if str(response.rfind('OK setup') == -1):
-                continue
-            break
-
-#Enviar mensaje 'BEGIN'
-message = pack('6s','BEGIN\0'.encode())
-send_message(message)
-
-#wait for window size in NVS
-while True:
-    if ser.is_waiting > 0:
-        try:
-            window_size_bytes = ser.read(4)
-            window_size_bytes = unpack("i", window_size_bytes)
-            window_size = int.from_bytes(window_size_bytes)
-        except:
-            continue
-        finally:
-            if window_size < 1:
-                continue
-            message = pack("3s", 'OK\0'.encode())
-            send_message(message)
-            break
-
 def recive_raw():
     while True:
         if ser.in_waiting > 0:
@@ -162,6 +123,7 @@ def recive_fft_im():
                 return fft_im
     
 def solicitar_ventana():
+    print("<receiver.solicitar_ventana()> inicio")
     global ax, ay, az 
     global gx, gy, gz
     global peak_ax, peak_ay, peak_az, peak_gx, peak_gy, peak_gz
@@ -169,23 +131,37 @@ def solicitar_ventana():
     global fft_ax, fft_ay, fft_az, fft_gx, fft_gy, fft_gz
     global ffti_ax, ffti_ay, ffti_az, ffti_gx, ffti_gy, ffti_gz
     
-    raw_arrays    =  []
-    rms_array     =  []
-    peaks_arrays  =  []
-    fft_re_arrays =  []
-    fft_im_arrays =  []
+    raw_arrays    =  [0 for i in range(6)]
+    rms_array     =  [0 for i in range(6)]
+    peaks_arrays  =  [0 for i in range(6)]
+    fft_re_arrays =  [0 for i in range(6)]
+    fft_im_arrays =  [0 for i in range(6)]
 
     send_message(pack('2s',"1".encode()))
+    print("<receiver.solicitar_ventana()> selection sent")
     
+    print("<receiver.solicitar_ventana()> recevie data")
     i=0
     while i<6 :
         raw_arrays[i]    = recive_raw()
+        print(f"raw_arrays[{i}]: {raw_arrays[i]}")
+        
         rms_array[i]     = recive_rms()
+        print(f"rms_array[{i}]: {rms_array[i]}")
+        
         fft_re_arrays[i] = recive_fft_re()
+        print(f"fft_re[{i}]: {fft_re_arrays[i]}")
+        
         fft_im_arrays[i] = recive_fft_im()
+        print(f"fft_im_arrays[{i}]: {fft_im_arrays[i]}")
+        
         peaks_arrays[i]  = recive_peaks()
+        print(f"peaks_arrays[{i}]: {peaks_arrays[i]}")
         i+=1
+        print("\n\n")
 
+    print("<receiver.solicitar_ventana()> assign results")
+    
     rms_a_g = rms_array
 
     gx      = raw_arrays[0]
@@ -218,9 +194,9 @@ def solicitar_ventana():
     ffti_az = fft_im_arrays[5]
     peak_az = peaks_arrays[5]
 
-    
-    
-    
+    create_time_array()
+    print("<receiver.solicitar_ventana()> final")
+    return
 
 def cambiar_tamano_ventana(nuevo_t):
 
@@ -248,3 +224,50 @@ def create_time_array():
     interval = measurement_time/window_size
 
     time_array = np.arange(0,measurement_time,interval).tolist()
+
+#____________________________________________________________
+#   MAIN
+#____________________________________________________________
+print("<receiver.py> inicio main")
+window_size = 0
+#wait for OK_setup
+print("<receiver.py> esperando OK setup")
+while True:
+    if ser.in_waiting > 0:
+        try:
+            response = ser.readline()
+            response = unpack("s", response)
+        except:
+            continue
+        finally:
+            if str(response).rfind('OK setup') == -1:
+                continue
+            break
+#Enviar mensaje 'BEGIN'
+message = pack('6s','BEGIN\0'.encode())
+send_message(message)
+print("<receiver.py> BEGIN sended")
+
+print("<receiver.py> waiting for window size")
+#wait for window size in NVS
+while True:
+    if ser.in_waiting > 0:
+        try:
+            print("<receiver.py> esperando window")
+            window_size_bytes = ser.read(4)
+            print("<receiver.py> paso read")
+            window_size_bytes = unpack("i", window_size_bytes)
+            print("<receiver.py> paso unpacked: "+ str(window_size_bytes))
+            window_size = int.from_bytes(window_size_bytes)
+            print("<receiver.py> window size: "+str(window_size))
+        except:
+            continue
+        finally:
+            if window_size < 1:
+                #print("<receiver.py> ws < 1")
+                continue
+            message = pack("3s", 'OK\0'.encode())
+            send_message(message)
+            print("<receiver.py> OK sent")
+            break
+print("<receiver.py> ready main")

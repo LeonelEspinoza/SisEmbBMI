@@ -23,6 +23,8 @@ class Canvas(FigureCanvas):
 
         t = receiver.time_array
 
+        print(receiver.ax)
+
         self.lineAx, = self.axis.plot(t,receiver.ax, color='r')
         self.lineAy, = self.axis.plot(t,receiver.ay, color='g')
         self.lineAz, = self.axis.plot(t,receiver.az, color='b')
@@ -100,6 +102,7 @@ class Ui_GraphAcceleration(QWidget):
 
     def checkbox_ax(self, state):
         if state:
+            print(receiver.ax)
             self.chart.lineAx, = self.chart.axis.plot(receiver.ax, color='r')
             self.chart.draw()
         else:

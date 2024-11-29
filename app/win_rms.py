@@ -21,9 +21,12 @@ class Canvas(FigureCanvas):
         super().__init__(fig)
         self.setParent(parent)
 
-        rms = ["rms_ax","rms_ay","rms_az","rms_gx","rms_gy","rms_gz"]
+        rms = ["rms_gx","rms_gy","rms_gz","rms_ax","rms_ay","rms_az"]
         count = receiver.rms_a_g
-        bar_label = ["aceleracion","_aceleracion","_aceleracion","giroscopio","_giroscopio","_giroscopio"]
+        
+        count = [10,312,414,64,1,3123]
+
+        bar_label = ["giroscopio","_giroscopio","_giroscopio","aceleracion","_aceleracion","_aceleracion",]
         bar_color = ["tab:red","tab:red","tab:red","tab:blue","tab:blue","tab:blue"]
         
         self.axis.bar(rms,count,label=bar_label,color=bar_color)
