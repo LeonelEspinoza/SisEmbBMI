@@ -3,3 +3,5 @@ main/a
 .vscode
 main/old.old
 venv/
+*.pyc
+*ui
