@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
+
 
 #include "driver/gpio.h"
 #include "driver/i2c_master.h"
@@ -706,9 +708,7 @@ void gyroscope_lecture(void){
             i++;
             printf("\n");
         }
-
     }
-
 }
 
 void acceleration_lecture(void) {
@@ -720,6 +720,7 @@ void acceleration_lecture(void) {
     uint8_t addr_acc_y_msb = 0x0F;
     uint8_t addr_acc_z_lsb = 0x10;
     uint8_t addr_acc_z_msb = 0x11;
+
     uint16_t acc_x;
     uint16_t acc_y;
     uint16_t acc_z;
@@ -960,7 +961,7 @@ void set_N(void){
  * @param array_re Direccion del arreglo donde se guardara la parte real. Debe ser de tamano size
  * @param array_im Direccion del arreglo donde se guardara la parte imaginaria. Debe ser de tamano size
  */
-void FFT(float *array, int size, float *array_re, float *array_im) {
+void FFT_float(float *array, int size, float *array_re, float *array_im) {
     for (int k = 0; k < size; k++) {
         float real = 0;
         float imag = 0;
@@ -981,18 +982,199 @@ void FFT(float *array, int size, float *array_re, float *array_im) {
     }
 }
 
-void process_data(void){
-    //Obtener datos de sensores
-        //obtener datos aceleracion, 3 ejes
-            //calcular 5 peaks
-            //calcularRMS
-            //calcularFFT
-        //obtener datos gyroscopio, 3 ejes
-            //calcular 5 peaks
-            //calcularRMS
-            //calcularFFT
-    //mandar los datos
+void FFT_int(int16_t *array, int size, float *array_re, float *array_im) {
+    for (int k = 0; k < size; k++) {
+        float real = 0;
+        float imag = 0;
+
+        for (int n = 0; n < size; n++) {
+            //3.14159265358979323846
+            float angulo = 2 * M_PI * k * n / size;
+            float cos_angulo = cos(angulo);
+            float sin_angulo = -sin(angulo);
+
+            real += array[n] * cos_angulo;
+            imag += array[n] * sin_angulo;
+        }
+        real /= size;
+        imag /= size;
+        array_re[k] = real;
+        array_im[k] = imag;
+    }
 }
+
+float RMS(float* data){
+    float sum = 0;
+    for (int i = 0; i < N; i++){
+        float num = data[i];
+        sum = sum + pow(num,2);
+    }
+    float sumN = sum / n;
+    float rms = sqrt(sumN);
+    return rms;
+}
+
+void read_data_loop(
+    int16_t* data_gyr_x, 
+    int16_t* data_gyr_y, 
+    int16_t* data_gyr_z, 
+    float*   data_acc_x, 
+    float*   data_acc_y, 
+    float*   data_acc_z)
+    {
+    uint8_t reg_intstatus  = 0x03, tmp;
+
+    //setup acc
+    uint8_t addr_acc_x_lsb = 0x0C;
+    uint8_t addr_acc_x_msb = 0x0D;
+    uint8_t addr_acc_y_lsb = 0x0E;
+    uint8_t addr_acc_y_msb = 0x0F;
+    uint8_t addr_acc_z_lsb = 0x10;
+    uint8_t addr_acc_z_msb = 0x11;
+    uint16_t acc_x;
+    uint16_t acc_y;
+    uint16_t acc_z;
+
+    //setup gyr
+    //uint8_t addr_gyr_cas = 0x3C;
+    //int8_t factor_zx;
+    uint8_t addr_gyr_x_lsb = 0x12;
+    uint8_t addr_gyr_x_msb = 0x13;
+    uint8_t addr_gyr_y_lsb = 0x14;
+    uint8_t addr_gyr_y_msb = 0x15;
+    uint8_t addr_gyr_z_lsb = 0x16;
+    uint8_t addr_gyr_z_msb = 0x17;
+    uint16_t gyr_x;
+    uint16_t gyr_y;
+    uint16_t gyr_z;
+
+    float con = 8.000 / 32768;
+    int32_t i = 0;
+    while(i<N){
+        bmi_read(&reg_intstatus, &tmp, 1);
+        if ((tmp & 0b11000000) == 0xC0) {
+            //read acc axis xyz
+            read_var_handler(&addr_acc_x_lsb, &addr_acc_x_msb, &tmp, &acc_x);
+            data_acc_x[i]=(int16_t)acc_x * con;
+
+            read_var_handler(&addr_acc_y_lsb, &addr_acc_y_msb, &tmp, &acc_y);
+            data_acc_y[i]=(int16_t)acc_y * con;
+
+            read_var_handler(&addr_acc_z_lsb, &addr_acc_z_msb, &tmp, &acc_z);
+            data_acc_z[i]=(int16_t)acc_z * con;
+
+            //read gyr axis xyz
+            read_var_handler(&addr_gyr_x_lsb, &addr_gyr_x_msb, &tmp, &gyr_x);
+            data_gyr_x[i]=(int16_t)gyr_x;
+
+            read_var_handler(&addr_gyr_y_lsb, &addr_gyr_y_msb, &tmp, &gyr_y);
+            data_gyr_y[i]=(int16_t)gyr_y;
+
+            read_var_handler(&addr_gyr_z_lsb, &addr_gyr_z_msb, &tmp, &gyr_z);
+            data_gyr_z[i]=(int16_t)gyr_x;
+
+            i++;
+        }
+    }
+    
+
+}
+
+int my_compare(const void *arg1, const void *arg2){
+    return arg1>arg2? -1 : 1; 
+}
+
+void send_data_warp(char* array, int size, float RSM, int elem_size){
+    
+    uart_write_bytes(UART_NUM, array, size);
+
+    char* tmp = (char*) &RMS;
+    uart_write_bytes(UART_NUM, tmp, sizeof(float));
+
+    qsort(array, size, elem_size, my_compare);
+    uart_write_bytes(UART_NUM, array, elem_size*5);
+}
+
+void send_fft_int(int16_t* data, int size){
+    float array_re= malloc(size);
+    float array_im= malloc(size);
+    FFT_int(data, size, array_re, array_im);
+    uart_write_bytes(UART_NUM, (const char*) array_re, size);
+    uart_write_bytes(UART_NUM, (const char*) array_im, size);
+    free(array_re);
+    free(array_im);
+}
+
+void send_fft_float(int16_t* data, int size){
+    float array_re= malloc(size);
+    float array_im= malloc(size);
+    FFT_float(data, size, array_re, array_im);
+    uart_write_bytes(UART_NUM, (const char*) array_re, size);
+    uart_write_bytes(UART_NUM, (const char*) array_im, size);
+    free(array_re);
+    free(array_im);
+}
+
+void process_data(void){
+    int gyr_data_size = sizeof(int16_t)*(N)
+    
+    int16_t* data_gyr_x = malloc(gyr_data_size);
+    int16_t* data_gyr_y = malloc(gyr_data_size);
+    int16_t* data_gyr_z = malloc(gyr_data_size);
+
+    int gyr_data_size = sizeof(float)*(N)
+
+    float* data_acc_x = malloc(gyr_data_size);
+    float* data_acc_y = malloc(gyr_data_size);
+    float* data_acc_z = malloc(gyr_data_size);
+
+    //Obtener datos de sensores
+    read_data_loop( data_gyr_x,
+                    data_gyr_y,
+                    data_gyr_z,
+                    data_acc_x,
+                    data_acc_y,
+                    data_acc_z);
+
+    //Calculate RMS
+    float RMS_gyr_x = RMS(data_gyr_x);
+    float RMS_gyr_y = RMS(data_gyr_y);
+    float RMS_gyr_z = RMS(data_gyr_z);
+
+    float RMS_acc_x = RMS(data_acc_x);
+    float RMS_acc_y = RMS(data_acc_y);
+    float RMS_acc_z = RMS(data_acc_z);
+
+    send_data_warp((char *) data_gyr_x, gyr_data_size, RMS_gyr_x, sizeof(int16_t));
+    send_fft_int(data_gyr_x, gyr_data_size);
+
+    send_data_warp((char *) data_gyr_y, gyr_data_size, RMS_gyr_y, sizeof(int16_t));
+    send_fft_int(data_gyr_y, gyr_data_size);
+    
+    send_data_warp((char *) data_gyr_z, gyr_data_size, RMS_gyr_z, sizeof(int16_t));
+    send_fft_int(data_gyr_z, gyr_data_size);
+    
+
+    send_data_warp((char *) data_acc_x, acc_data_size, RMS_acc_x, sizeof(float));
+    send_fft_float(data_acc_x, acc_data_size);
+    
+    send_data_warp((char *) data_acc_y, acc_data_size, RMS_acc_y, sizeof(float));
+    send_fft_float(data_acc_y, acc_data_size);
+    
+    send_data_warp((char *) data_acc_z, acc_data_size, RMS_acc_z, sizeof(float));
+    send_fft_float(data_acc_z, acc_data_size);
+
+    //calcularFFT
+    
+    free(data_gyr_x);
+    free(data_gyr_y);
+    free(data_gyr_z);
+    
+    free(data_acc_x);
+    free(data_acc_y);
+    free(data_acc_z);
+}
+
 
 void app_main(void) {
     ESP_ERROR_CHECK(bmi_init());
