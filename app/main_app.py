@@ -15,6 +15,9 @@ from win_giroscopio import Ui_GraphGyroscope
 from win_rms import Ui_RMS
 from win_fft import Ui_FFT
 
+import time
+#import receiver
+
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
@@ -151,9 +154,12 @@ class Ui_MainWindow(object):
     
     def pedirVentana(slef):
         print("pidiendo ventana")
+        receiver.solicitar_ventana()
     
     def cerrarConexion(self):
+        receiver.cortar_comunicacion()
         print("cerrando conexion")
+
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate

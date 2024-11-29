@@ -9,6 +9,7 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+#import receiver
 
 class Ui_ChangeSizeWindow(object):
     def setupUi(self, MainWindow):
@@ -54,10 +55,10 @@ class Ui_ChangeSizeWindow(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
     
     def mandarVentanaNueva(self):
-        #codigo para modificar ventana
         text = self.lineEdit.text()
-        print(text)
-        #agregar despues
+        
+        #codigo para modificar ventana
+        receiver.cambiar_tamano_ventana(int(text))
     
     def volverMenu(self):
         from main_app import Ui_MainWindow
