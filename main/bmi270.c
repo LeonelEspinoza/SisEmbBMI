@@ -29,7 +29,7 @@
 #define BUF_SIZE (128) // buffer size
 #define UART_NUM UART_NUM_0   // UART port number
 
-#define REDIRECT_LOGS 1 // if redirect ESP log to another UART
+#define REDIRECT_LOGS 0 // if redirect ESP log to another UART
 
 #define M_PI 3.14159265358979323846
 
@@ -1047,81 +1047,88 @@ void read_data_loop(float** data_arrays){
 }
 
 int my_compare(const void *arg1, const void *arg2){
-    return arg1>arg2? -1 : 1; 
+    return *(float*)arg1 > *(float*)arg2? -1 : 1;
 }
 
 void send_data_warp(float* array, int size){
-    printf("<send_data_warp> start\n\n");
+    //printf("<send_data_warp> start\n\n");
     
-    printf("<send_data_warp> raw_array = ");
+    /*
+    //printf("<send_data_warp> raw_array = ");
     for(int j=0; j<N; j++){
-        printf("%f, ",array[j]);
+        //printf("%f, ",array[j]);
     }
-    printf("\n\n");
+    //printf("\n\n");
+    */
 
     //send raw data
-    printf("<send_data_warp> start uart_write_bytes(raw_data)\n");
+    //printf("<send_data_warp> start uart_write_bytes(raw_data)\n");
     const char* buff = (const char*) array; 
     uart_write_bytes(UART_NUM, buff, size);
-    printf("\n");
-    printf("<send_data_warp> finish uart_write_bytes(raw_data)\n\n");
+    //printf("\n");
+    //printf("<send_data_warp> finish uart_write_bytes(raw_data)\n\n");
+   
 
-    printf("<send_data_warp> raw_array = ");
-    for(int j=0; j<N; j++){
-        printf("%f, ",array[j]);
-    }
-    printf("\n");
-    
     //send RMS value
-    printf("<send_data_warp> start RMS(array)\n");
+    //printf("<send_data_warp> start RMS(array)\n");
     float RMS_value = RMS(array);
-    printf("<send_data_warp> finish RMS(array)\n");
+    //printf("<send_data_warp> finish RMS(array)\n");
 
-    printf("<send_data_warp> start uart_write_bytes(RMS)\n");
+    //printf("<send_data_warp> start uart_write_bytes(RMS)\n");
     const char* buff2 = (const char*) &RMS_value;
     uart_write_bytes(UART_NUM, (const char*) buff2, sizeof(float));
-    printf("\n");
-    printf("<send_data_warp> finish uart_write_bytes(RMS)\n\n");
+    //printf("\n");
+    //printf("<send_data_warp> finish uart_write_bytes(RMS)\n\n");
 
-    printf("RMS = %f\n",RMS_value);
+    //printf("RMS = %f\n",RMS_value);
 
     //send FFT
     float* array_re= malloc(size);
     float* array_im= malloc(size);
-    printf("<send_data_warp> start FFT\n");
+    //printf("<send_data_warp> start FFT\n");
     FFT(array, N, array_re, array_im);
-    printf("<send_data_warp> finish FFT\n");
+    //printf("<send_data_warp> finish FFT\n");
     
-    printf("<send_data_warp> start uart_write_bytes(array_re)\n");
+    //printf("<send_data_warp> start uart_write_bytes(array_re)\n");
     const char* buff3 = (const char*) array_re;
     uart_write_bytes(UART_NUM, (const char*) buff3, size);
-    printf("\n");
-    printf("<send_data_warp> finish uart_write_bytes(array_re)\n\n");
+    //printf("\n");
+    //printf("<send_data_warp> finish uart_write_bytes(array_re)\n\n");
     
-    printf("<send_data_warp> start uart_write_bytes(array_im)\n");
+    //printf("<send_data_warp> start uart_write_bytes(array_im)\n");
     const char* buff4 = (const char*) array_im;
     uart_write_bytes(UART_NUM, (const char*) buff4, size);
-    printf("\n");
-    printf("<send_data_warp> finish uart_write_bytes(array_im)\n\n");
+    //printf("\n");
+    //printf("<send_data_warp> finish uart_write_bytes(array_im)\n\n");
 
     free(array_re);
     free(array_im);
     
     //send 5 peaks
-    printf("<send_data_warp> start qsort(array)\n");
+    //printf("<send_data_warp> start qsort(array)\n");
     qsort(array, N, sizeof(float), my_compare);
-    printf("<send_data_warp> finish qsort(array)\n");
+    //printf("<send_data_warp> finish qsort(array)\n");
+    /*
+    printf("\n");
+    printf("<send_data_warp> raw_array = ");
+    for(int j=0; j<N; j++){
+        printf("%f, ",array[j]);
+    }
+    printf("\n");
+    printf("\n");
+    */
     
-    printf("<send_data_warp> start uart_write_bytes(sorted_array)\n");
+    //printf("<send_data_warp> start uart_write_bytes(sorted_array)\n");
     const char* buff5 = (const char*) array;
     uart_write_bytes(UART_NUM, (char*) buff5, sizeof(float)*5);
-    printf("\n");
-    printf("<send_data_warp> finish uart_write_bytes(sorted_array)\n\n");
+    //printf("\n");
+    //printf("<send_data_warp> finish uart_write_bytes(sorted_array)\n\n");
+
 }
 
 void process_data(void){
     int data_size = sizeof(float)*N;
-    printf("<process_data> init data_arrays\n");
+    //printf("<process_data> init data_arrays\n");
     /* Un arreglo que contiene los arreglos de las mediciones
     data_array[0]=data_gyr_x
     data_array[1]=data_gyr_y
@@ -1135,29 +1142,34 @@ void process_data(void){
         data_arrays[i]=(float*) malloc(data_size);
     }
 
-    printf("<process_data> start read data loop\n");
+    //printf("<process_data> start read data loop\n");
     //Obtener datos de sensores
     read_data_loop(data_arrays);
-    printf("<process_data> finish read data loop\n");
+    //printf("<process_data> finish read data loop\n");
     
+    /*
     for(int i=0; i<6; i++){
-        printf("data_arrays[%d] = ",i);
+        //printf("data_arrays[%d] = ",i);
         for(int j=0; j<N; j++){
-            printf("%f, ",data_arrays[i][j]);
+            //printf("%f, ",data_arrays[i][j]);
         }
-        printf("\n");
+        //printf("\n");
     }
-    printf("\n");
+    //printf("\n");
+    */
+
+
+    //uart_write_warp("Begin send");
 
     //Calcula y envia los datos en orden:
     // raw, RMS, 5 peaks, fft_re, fft_im
-    printf("<process_data> start for send_data_warp\n");
+    //printf("<process_data> start for send_data_warp\n");
     for(int i=0; i<6; i++){
         send_data_warp(data_arrays[i], data_size);
     }
-    printf("<process_data> finish for send_data_warp\n");
+    //printf("<process_data> finish for send_data_warp\n");
 
-    printf("<process_data> free malloc\n");
+    //printf("<process_data> free malloc\n");
     //Liberar mallocs
     for(int i=0; i<6; i++){
         free(data_arrays[i]);
@@ -1179,9 +1191,6 @@ void app_main(void) {
     //initialize N var; used for meassurment window size.
     setup_N();
 
-    //ESP sends "OK setup" message to syncronize with python app.
-    uart_write_warp("OK setup");
-    
     //ESP waites "BEGIN" response to begin.
     char BEGIN_response[6];
     int r_len = 0;
@@ -1193,6 +1202,9 @@ void app_main(void) {
             }
         }
     }
+
+    //ESP sends "OK setup" message to syncronize with python app.
+    uart_write_warp("OK setup");
 
     //ESP sends window meassurment size (N var) to python app until "OK" response.
     char OK_response[3];
@@ -1252,15 +1264,6 @@ void app_main(void) {
     process_data();
 
     printf("finish\n");
-    int i=0;
-    while(true){
-        i++;
-        if(i>10000){
-            printf(".");
-            i=0;
-        }
-    }
-    
-    end_conection();
+    return;
 }
 */

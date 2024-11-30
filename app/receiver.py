@@ -11,7 +11,7 @@ BAUD_RATE = 115200  # Debe coincidir con la configuracion de la ESP32
 ser = serial.Serial(PORT, BAUD_RATE, timeout = 1)
 
 #variable para manejar los casos
-select = None
+window_size = 0
 
 #listas con datos
 ax = []
@@ -123,7 +123,7 @@ def recive_fft_im():
                 return fft_im
     
 def solicitar_ventana():
-    print("<receiver.solicitar_ventana()> inicio")
+    print("<receiver.solicitar_ventana()> start")
     global ax, ay, az 
     global gx, gy, gz
     global peak_ax, peak_ay, peak_az, peak_gx, peak_gy, peak_gz
@@ -140,7 +140,7 @@ def solicitar_ventana():
     send_message(pack('2s',"1".encode()))
     print("<receiver.solicitar_ventana()> selection sent")
     
-    print("<receiver.solicitar_ventana()> recevie data")
+    print("<receiver.solicitar_ventana()> receiving data")
     i=0
     while i<6 :
         raw_arrays[i]    = recive_raw()
@@ -158,9 +158,9 @@ def solicitar_ventana():
         peaks_arrays[i]  = recive_peaks()
         print(f"peaks_arrays[{i}]: {peaks_arrays[i]}")
         i+=1
-        print("\n\n")
+        print("\n")
 
-    print("<receiver.solicitar_ventana()> assign results")
+    print("<receiver.solicitar_ventana()> assigning results")
     
     rms_a_g = rms_array
 
@@ -195,14 +195,14 @@ def solicitar_ventana():
     peak_az = peaks_arrays[5]
 
     create_time_array()
-    print("<receiver.solicitar_ventana()> final")
+    print("<receiver.solicitar_ventana()> finish")
     return
 
 def cambiar_tamano_ventana(nuevo_t):
-
+    global window_size
     send_message(pack('2s',"2".encode()))
 
-    wSize = nuevo_t
+    window_size = nuevo_t
     if nuevo_t < 10:
         nuevo_t = "00" + str(nuevo_t)
     elif nuevo_t < 100:
@@ -210,9 +210,10 @@ def cambiar_tamano_ventana(nuevo_t):
     else:
         nuevo_t = str(nuevo_t)
     
-    print(wSize)
     #mandamos tamaño de ventana
     send_message(pack('3s',nuevo_t.encode()))
+
+    print(f"<receiver.cambiar_tamano_ventana({nuevo_t})> window_size = {window_size}")
 
 def cortar_comunicacion():
     send_message(pack('2s',"3".encode()))
@@ -229,10 +230,21 @@ def create_time_array():
 #   MAIN
 #____________________________________________________________
 print("<receiver.py> inicio main")
-window_size = 0
 #wait for OK_setup
-print("<receiver.py> esperando OK setup")
+
+#Enviar mensaje 'BEGIN'
+message = pack('6s','BEGIN\0'.encode())
+send_message(message)
+print("<receiver.py> 'BEGIN' sended")
+
+print("<receiver.py> wating 'OK setup'")
+c = 0
 while True:
+    if c>100000:
+        print("<receiver.py> 'BEGIN' resended")
+        message = pack('6s','BEGIN\0'.encode())
+        send_message(message)
+        c=0
     if ser.in_waiting > 0:
         try:
             response = ser.readline()
@@ -243,31 +255,27 @@ while True:
             if str(response).rfind('OK setup') == -1:
                 continue
             break
-#Enviar mensaje 'BEGIN'
-message = pack('6s','BEGIN\0'.encode())
-send_message(message)
-print("<receiver.py> BEGIN sended")
+    c+=1
 
 print("<receiver.py> waiting for window size")
 #wait for window size in NVS
 while True:
     if ser.in_waiting > 0:
         try:
-            print("<receiver.py> esperando window")
             window_size_bytes = ser.read(4)
-            print("<receiver.py> paso read")
+            print("<receiver.py> serial readed")
             window_size_bytes = unpack("i", window_size_bytes)
-            print("<receiver.py> paso unpacked: "+ str(window_size_bytes))
+            print("<receiver.py> unpacked: "+ str(window_size_bytes))
             window_size = int.from_bytes(window_size_bytes)
             print("<receiver.py> window size: "+str(window_size))
         except:
             continue
         finally:
             if window_size < 1:
-                #print("<receiver.py> ws < 1")
+                print("<receiver.py> Error! window size < 1")
                 continue
             message = pack("3s", 'OK\0'.encode())
             send_message(message)
-            print("<receiver.py> OK sent")
+            print("<receiver.py> 'OK' sent")
             break
 print("<receiver.py> ready main")
