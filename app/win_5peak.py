@@ -15,174 +15,145 @@ from PyQt5.QtWidgets import QApplication, QWidget
 import numpy as np
 import receiver
 
-class Canvas(FigureCanvas):
-    def __init__(self,parent):
-        fig, self.axis = plt.subplots(figsize=(3,2),dpi=100)
-        super().__init__(fig)
-        self.setParent(parent)
-
-        t = receiver.time_array
-
-        self.lineAx, = self.axis.plot(t,receiver.peak_ax, color='r')
-        self.lineAy, = self.axis.plot(t,receiver.peak_ay, color='g')
-        self.lineAz, = self.axis.plot(t,receiver.peak_az, color='b')
-
-        self.axis2 = self.axis.twinx()
-
-        self.lineGx, = self.axis2.plot(t,receiver.peak_gx, color='m')
-        self.lineGy, = self.axis2.plot(t,receiver.peak_gy, color='y')
-        self.lineGz, = self.axis2.plot(t,receiver.peak_gz, color='c')
-        
-        self.axis.set(xlabel='tiempo', ylabel='aceleración', title='Medidas RMS')
-        self.axis.set(ylabel='angulo')
-        self.axis.grid()
-
-        fig.tight_layout()
-
 class Ui_5Peaks(QWidget):
     def setupUi(self, Graph5Peaks):
         Graph5Peaks.setObjectName("Graph5Peaks")
-        Graph5Peaks.resize(820, 600)
+        Graph5Peaks.resize(800, 600)
         self.centralwidget = QtWidgets.QWidget(Graph5Peaks)
         self.centralwidget.setObjectName("centralwidget")
-
-        self.horizontalLayoutWidget = QtWidgets.QWidget(self.centralwidget)
-        self.horizontalLayoutWidget.setGeometry(QtCore.QRect(0, 0, 820, 600))
-        self.horizontalLayoutWidget.setObjectName("horizontalLayoutWidget")
-        self.horizontalLayout = QtWidgets.QHBoxLayout(self.horizontalLayoutWidget)
-        self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
-        self.horizontalLayout.setObjectName("horizontalLayout")
-
-        self.chart = Canvas(self)
-        self.horizontalLayout.addWidget(self.chart)
-
-        self.verticalLayoutWidget = QtWidgets.QWidget(self.horizontalLayoutWidget)
-        self.verticalLayoutWidget.setGeometry(QtCore.QRect(743, 170, 77, 151))
-        self.verticalLayoutWidget.setObjectName("verticalLayoutWidget")
-        self.verticalLayout = QtWidgets.QVBoxLayout(self.verticalLayoutWidget)
-        self.verticalLayout.setContentsMargins(0, 0, 0, 0)
-        self.verticalLayout.setSpacing(0)
-        self.verticalLayout.setObjectName("verticalLayout")
-        self.checkBox = QtWidgets.QCheckBox(self.verticalLayoutWidget)
-        self.checkBox.setBaseSize(QtCore.QSize(10, 10))
-        font = QtGui.QFont()
-        font.setPointSize(12)
-        self.checkBox.setFont(font)
-        self.checkBox.setObjectName("checkBox")
-        self.verticalLayout.addWidget(self.checkBox)
-        self.checkBox.setChecked(True)
-
-        self.checkBox_2 = QtWidgets.QCheckBox(self.verticalLayoutWidget)
-        font = QtGui.QFont()
-        font.setPointSize(12)
-        self.checkBox_2.setFont(font)
-        self.checkBox_2.setObjectName("checkBox_2")
-        self.verticalLayout.addWidget(self.checkBox_2)
-        self.checkBox_2.setChecked(True)
-
-        self.checkBox_3 = QtWidgets.QCheckBox(self.verticalLayoutWidget)
-        font = QtGui.QFont()
-        font.setPointSize(12)
-        self.checkBox_3.setFont(font)
-        self.checkBox_3.setObjectName("checkBox_3")
-        self.verticalLayout.addWidget(self.checkBox_3)
-        self.checkBox_3.setChecked(True)
-
-        self.checkBox_4 = QtWidgets.QCheckBox(self.verticalLayoutWidget)
-        font = QtGui.QFont()
-        font.setPointSize(12)
-        self.checkBox_4.setFont(font)
-        self.checkBox_4.setObjectName("checkBox_4")
-        self.verticalLayout.addWidget(self.checkBox_4)
-        self.checkBox_4.setChecked(True)
-
-        self.checkBox_5 = QtWidgets.QCheckBox(self.verticalLayoutWidget)
-        font = QtGui.QFont()
-        font.setPointSize(12)
-        self.checkBox_5.setFont(font)
-        self.checkBox_5.setObjectName("checkBox_5")
-        self.verticalLayout.addWidget(self.checkBox_5)
-        self.checkBox_5.setChecked(True)
-
-        self.checkBox_6 = QtWidgets.QCheckBox(self.verticalLayoutWidget)
-        font = QtGui.QFont()
-        font.setPointSize(12)
-        self.checkBox_6.setFont(font)
-        self.checkBox_6.setObjectName("checkBox_6")
-        self.verticalLayout.addWidget(self.checkBox_6)
-        self.checkBox_6.setChecked(True)
-
-        self.pushButton = QtWidgets.QPushButton(self.verticalLayoutWidget)
+        self.gridLayoutWidget = QtWidgets.QWidget(self.centralwidget)
+        self.gridLayoutWidget.setGeometry(QtCore.QRect(90, 60, 619, 519))
+        self.gridLayoutWidget.setObjectName("gridLayoutWidget")
+        self.gridLayout = QtWidgets.QGridLayout(self.gridLayoutWidget)
+        self.gridLayout.setSizeConstraint(QtWidgets.QLayout.SetDefaultConstraint)
+        self.gridLayout.setContentsMargins(0, 0, 0, 0)
+        self.gridLayout.setObjectName("gridLayout")
+        self.label_6 = QtWidgets.QLabel(self.gridLayoutWidget)
         font = QtGui.QFont()
         font.setPointSize(10)
-        self.pushButton.setFont(font)
-        self.pushButton.setObjectName("pushButton")
-        self.verticalLayout.addWidget(self.pushButton)
+        self.label_6.setFont(font)
+        self.label_6.setObjectName("label_6")
+        self.gridLayout.addWidget(self.label_6, 2, 1, 1, 1)
+        self.label_12 = QtWidgets.QLabel(self.gridLayoutWidget)
+        font = QtGui.QFont()
+        font.setPointSize(10)
+        self.label_12.setFont(font)
+        self.label_12.setObjectName("label_12")
+        self.gridLayout.addWidget(self.label_12, 5, 1, 1, 1)
+        self.label_8 = QtWidgets.QLabel(self.gridLayoutWidget)
+        font = QtGui.QFont()
+        font.setPointSize(10)
+        self.label_8.setFont(font)
+        self.label_8.setObjectName("label_8")
+        self.gridLayout.addWidget(self.label_8, 3, 1, 1, 1)
+        self.label_11 = QtWidgets.QLabel(self.gridLayoutWidget)
+        font = QtGui.QFont()
+        font.setPointSize(10)
+        self.label_11.setFont(font)
+        self.label_11.setAlignment(QtCore.Qt.AlignCenter)
+        self.label_11.setObjectName("label_11")
+        self.gridLayout.addWidget(self.label_11, 5, 0, 1, 1)
+        self.label_3 = QtWidgets.QLabel(self.gridLayoutWidget)
+        font = QtGui.QFont()
+        font.setPointSize(10)
+        self.label_3.setFont(font)
+        self.label_3.setAlignment(QtCore.Qt.AlignCenter)
+        self.label_3.setObjectName("label_3")
+        self.gridLayout.addWidget(self.label_3, 1, 0, 1, 1)
+        self.label_5 = QtWidgets.QLabel(self.gridLayoutWidget)
+        font = QtGui.QFont()
+        font.setPointSize(10)
+        self.label_5.setFont(font)
+        self.label_5.setAlignment(QtCore.Qt.AlignCenter)
+        self.label_5.setObjectName("label_5")
+        self.gridLayout.addWidget(self.label_5, 2, 0, 1, 1)
+        self.label_4 = QtWidgets.QLabel(self.gridLayoutWidget)
+        font = QtGui.QFont()
+        font.setPointSize(10)
+        self.label_4.setFont(font)
+        self.label_4.setObjectName("label_4")
+        self.gridLayout.addWidget(self.label_4, 1, 1, 1, 1)
+        self.label_7 = QtWidgets.QLabel(self.gridLayoutWidget)
+        font = QtGui.QFont()
+        font.setPointSize(10)
+        self.label_7.setFont(font)
+        self.label_7.setAlignment(QtCore.Qt.AlignCenter)
+        self.label_7.setObjectName("label_7")
+        self.gridLayout.addWidget(self.label_7, 3, 0, 1, 1)
+        self.label_2 = QtWidgets.QLabel(self.gridLayoutWidget)
+        font = QtGui.QFont()
+        font.setPointSize(10)
+        self.label_2.setFont(font)
+        self.label_2.setObjectName("label_2")
+        self.gridLayout.addWidget(self.label_2, 0, 1, 1, 1)
+        self.label_9 = QtWidgets.QLabel(self.gridLayoutWidget)
+        font = QtGui.QFont()
+        font.setPointSize(10)
+        self.label_9.setFont(font)
+        self.label_9.setAlignment(QtCore.Qt.AlignCenter)
+        self.label_9.setObjectName("label_9")
+        self.gridLayout.addWidget(self.label_9, 4, 0, 1, 1)
+        self.label_10 = QtWidgets.QLabel(self.gridLayoutWidget)
+        font = QtGui.QFont()
+        font.setPointSize(10)
+        self.label_10.setFont(font)
+        self.label_10.setObjectName("label_10")
+        self.gridLayout.addWidget(self.label_10, 4, 1, 1, 1)
+        self.label = QtWidgets.QLabel(self.gridLayoutWidget)
+        font = QtGui.QFont()
+        font.setPointSize(10)
+        self.label.setFont(font)
+        self.label.setAlignment(QtCore.Qt.AlignCenter)
+        self.label.setObjectName("label")
+        self.gridLayout.addWidget(self.label, 0, 0, 1, 1)
+        self.label_13 = QtWidgets.QLabel(self.centralwidget)
+        self.label_13.setGeometry(QtCore.QRect(220, 20, 331, 31))
+        font = QtGui.QFont()
+        font.setPointSize(20)
+        self.label_13.setFont(font)
+        self.label_13.setAlignment(QtCore.Qt.AlignCenter)
+        self.label_13.setObjectName("label_13")
         Graph5Peaks.setCentralWidget(self.centralwidget)
         self.statusbar = QtWidgets.QStatusBar(Graph5Peaks)
         self.statusbar.setObjectName("statusbar")
         Graph5Peaks.setStatusBar(self.statusbar)
 
-        self.retranslateUi(Graph5Peaks)
-        QtCore.QMetaObject.connectSlotsByName(Graph5Peaks)
+        self.pushButton = QtWidgets.QPushButton(self.gridLayoutWidget)
+        font = QtGui.QFont()
+        font.setPointSize(10)
+        self.pushButton.setFont(font)
+        self.pushButton.setObjectName("Volver")
+        self.gridLayout.addWidget(self.pushButton, 6,0,1,1)
+        self.pushButton.setText("Volver")
 
         self.pushButton.clicked.connect(self.volverMenu)
         self.pushButton.clicked.connect(Graph5Peaks.close)
 
-        self.checkBox.stateChanged.connect(self.checkbox_ax)
-        self.checkBox_2.stateChanged.connect(self.checkbox_ay)
-        self.checkBox_3.stateChanged.connect(self.checkbox_az)
-        self.checkBox_4.stateChanged.connect(self.checkbox_gx)
-        self.checkBox_5.stateChanged.connect(self.checkbox_gy)
-        self.checkBox_6.stateChanged.connect(self.checkbox_gz)
+        self.retranslateUi(Graph5Peaks)
+        QtCore.QMetaObject.connectSlotsByName(Graph5Peaks)
 
-    def checkbox_ax(self, state):
-        if state:
-            self.chart.lineAx, = self.chart.axis.plot(receiver.peak_ax, color='r')
-            self.chart.draw()
-        else:
-            self.chart.lineAx.remove()
-            self.chart.draw()
-    
-    def checkbox_ay(self, state):
-        if state:
-            self.chart.lineAy, = self.chart.axis.plot(receiver.peak_ay, color='g')
-            self.chart.draw()
-        else:
-            self.chart.lineAy.remove()
-            self.chart.draw()
-            
-    def checkbox_az(self, state):
-        if state:
-            self.chart.lineAz, = self.chart.axis.plot(receiver.peak_az, color='b')
-            self.chart.draw()
-        else:
-            self.chart.lineAz.remove()
-            self.chart.draw()
-    
-    def checkbox_gx(self, state):
-        if state:
-            self.chart.lineGx, = self.chart.axis.plot(receiver.peak_gx, color='m')
-            self.chart.draw()
-        else:
-            self.chart.lineGx.remove()
-            self.chart.draw()
-    
-    def checkbox_gy(self, state):
-        if state:
-            self.chart.lineGy, = self.chart.axis.plot(receiver.peak_gy, color='y')
-            self.chart.draw()
-        else:
-            self.chart.lineGy.remove()
-            self.chart.draw()
-    
-    def checkbox_gz(self, state):
-        if state:
-            self.chart.lineGz, = self.chart.axis.plot(receiver.peak_gz, color='c')
-            self.chart.draw()
-        else:
-            self.chart.lineGz.remove()
-            self.chart.draw()
+        #tomamos los datos
+        peak_ax = receiver.peak_ax
+        peak_ay = receiver.peak_ay
+        peak_az = receiver.peak_az
+        peak_gx = receiver.peak_gx
+        peak_gy = receiver.peak_gy
+        peak_gz = receiver.peak_gz
+        #agregamos los peaks
+        self.label_2.setText(peak_ax)
+        self.label_4.setText(peak_ay)
+        self.label_6.setText(peak_az)
+
+        self.label_8.setText(peak_gx)
+        self.label_10.setText(peak_gy)
+        self.label_12.setText(peak_gz)
+
+        self.label_2.adjustSize()
+        self.label_4.adjustSize()
+        self.label_6.adjustSize()
+        self.label_8.adjustSize()
+        self.label_10.adjustSize()
+        self.label_12.adjustSize()
     
     def volverMenu(self):
         from main_app import Ui_MainWindow
@@ -193,21 +164,27 @@ class Ui_5Peaks(QWidget):
 
     def retranslateUi(self, Graph5Peaks):
         _translate = QtCore.QCoreApplication.translate
-        Graph5Peaks.setWindowTitle(_translate("Graph5Peaks", "Gráfico Aceleración"))
-        self.checkBox.setText(_translate("Graph5Peaks", "a_eje X"))
-        self.checkBox_2.setText(_translate("Graph5Peaks", "a_eje Y"))
-        self.checkBox_3.setText(_translate("Graph5Peaks", "a_eje Z"))
-        self.checkBox_4.setText(_translate("Graph5Peaks", "g_eje X"))
-        self.checkBox_5.setText(_translate("Graph5Peaks", "g_eje Y"))
-        self.checkBox_6.setText(_translate("Graph5Peaks", "g_eje Z"))
-        self.pushButton.setText(_translate("Graph5Peaks", "Volver"))
+        Graph5Peaks.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        self.label_6.setText(_translate("MainWindow", "az"))
+        self.label_12.setText(_translate("MainWindow", "gz"))
+        self.label_8.setText(_translate("MainWindow", "gx"))
+        self.label_11.setText(_translate("MainWindow", "Giroscopio en Z:"))
+        self.label_3.setText(_translate("MainWindow", "Aceleración en Y:"))
+        self.label_5.setText(_translate("MainWindow", "Aceleración en Z:"))
+        self.label_4.setText(_translate("MainWindow", "ay"))
+        self.label_7.setText(_translate("MainWindow", "Giroscopio en X:"))
+        self.label_2.setText(_translate("MainWindow", "ax"))
+        self.label_9.setText(_translate("MainWindow", "Giroscopio en Y:"))
+        self.label_10.setText(_translate("MainWindow", "gy"))
+        self.label.setText(_translate("MainWindow", "Aceleración en X:"))
+        self.label_13.setText(_translate("MainWindow", "Tabla con 5 Peaks"))
 
 
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
-    MainWindow = QtWidgets.QMainWindow()
+    Graph5Peaks = QtWidgets.QGraph5Peaks()
     ui = Ui_5Peaks()
-    ui.setupUi(MainWindow)
-    MainWindow.show()
+    ui.setupUi(Graph5Peaks)
+    Graph5Peaks.show()
     sys.exit(app.exec_())

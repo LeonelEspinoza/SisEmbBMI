@@ -204,7 +204,7 @@ class Ui_MainWindow(object):
         self.pushButton_3.setText(_translate("MainWindow", "Gráfico aceleración "))
         self.pushButton_5.setText(_translate("MainWindow", "Gráfico giroscopio"))
         self.pushButton_6.setText(_translate("MainWindow", "Gráfico RMS"))
-        self.pushButton_8.setText(_translate("MainWindow", "Gráfico 5-peaks"))
+        self.pushButton_8.setText(_translate("MainWindow", "Tabla 5-peaks"))
         self.pushButton_7.setText(_translate("MainWindow", "Gráfico FFT reales"))
         self.pushButton_9.setText(_translate("MainWindow", "Gráfico FFT imaginarios"))
         self.pushButton_2.setText(_translate("MainWindow", "Cambiar tamaño ventana"))

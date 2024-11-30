@@ -195,6 +195,7 @@ def solicitar_ventana():
     peak_az = peaks_arrays[5]
 
     create_time_array()
+    create_5peak_str()
     print("<receiver.solicitar_ventana()> finish")
     return
 
@@ -225,6 +226,18 @@ def create_time_array():
     interval = measurement_time/window_size
 
     time_array = np.arange(0,measurement_time,interval).tolist()
+
+def create_5peak_str():
+    global peak_ax, peak_ay, peak_az, peak_gx, peak_gy, peak_gz
+
+    peak_ax = ', '.join(map(str,peak_ax))
+    peak_ay = ', '.join(map(str,peak_ay))
+    peak_az = ', '.join(map(str,peak_az))
+    peak_gx = ', '.join(map(str,peak_gx))
+    peak_gy = ', '.join(map(str,peak_gy))
+    peak_gz = ', '.join(map(str,peak_gz))
+
+
 
 #____________________________________________________________
 #   MAIN

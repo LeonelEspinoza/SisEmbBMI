@@ -17,21 +17,23 @@ import receiver
 
 class Canvas(FigureCanvas):
     def __init__(self,parent):
-        fig, self.axis = plt.subplots(figsize=(3,2),dpi=100)
+        fig, self.axis = plt.subplots(ncols=2, figsize=(3,2),dpi=100)
         super().__init__(fig)
         self.setParent(parent)
 
         rms = ["rms_gx","rms_gy","rms_gz","rms_ax","rms_ay","rms_az"]
-        count = receiver.rms_a_g
-        
-        count = [10,312,414,64,1,3123]
+        rmsg = ["rms_gx","rms_gy","rms_gz"]
+        rmsa = ["rms_ax","rms_ay","rms_az"]
+        count = receiver.rms_a_g   
 
-        bar_label = ["giroscopio","_giroscopio","_giroscopio","aceleracion","_aceleracion","_aceleracion",]
-        bar_color = ["tab:red","tab:red","tab:red","tab:blue","tab:blue","tab:blue"]
+        bar_labelg = ["giroscopio","_giroscopio","_giroscopio"]
+        bar_labela = ["aceleracion","_aceleracion","_aceleracion"]
         
-        self.axis.bar(rms,count,label=bar_label,color=bar_color)
+        self.axis[0].scatter(x=rmsg,y=count[0:3],label=bar_labelg)
+        self.axis[1].scatter(x=rmsa,y=count[3:6],label=bar_labela)
 
-        self.axis.set(xlabel='RMS', ylabel='valores', title='Medicion de RMS')
+        self.axis[0].set(xlabel='RMS_G', ylabel='valores', title='Medicion de RMS Giroscopio')
+        self.axis[1].set(xlabel='RMS_A', ylabel='valores', title='Medicion de RMS Aceleración')
 
         #self.axis.plot(t,s)
         #self.axis.set(xlabel='time (s)', ylabel='voltage (mv)', title='nada')
