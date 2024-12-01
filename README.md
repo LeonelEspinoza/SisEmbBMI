@@ -5,6 +5,71 @@ Integrantes:
 - Diego Opazo
 - Felipe Lemos
 - Leonel Espinoza
+## Antes de ejecutar
+### ESP y BMI-270
+Para este proyecto es necesario cargar una ESP con el código en el archivo `main/bmi270.c`.  
+El archivo debe ser compilado (_build_), y después cargado (_flash_) a una ESP conectada a un BMI270.
+
+### Ambiente virtual
+Para ejecutar la aplicación de python es necesario crear un ambiente virtual y en el mismo instalar las librerías y modulos necesarios.
+
+Para crear un ambiente virtual:
+
+    python -m venv /path/to/new/virtual/environment
+
+Activar el ambiente virtual:
+
+    /{path to virtual environment}/scripts/activate
+
+E instalar requirements.txt
+
+    pip install -r app/requirements.txt
+
+## Ejecución
+
+Una vez la ESP conectada a una BMI 270 ya tiene el codigo `main/bmi270.c` y esta corriendo, se puede ejecutar la aplicación gráfica de python.  
+
+Para ejecutar la aplicación:
+
+    python app/main_app.py
+
+Lo primero que realiza la aplicación es intentar sincronizarse con la ESP, por lo tanto puede demorar un momento.
+
+## Utilizar la aplicación
+Dentro de la aplicación habran 9 botones:
+- Solicitar ventana  
+    - Este boton solicita una ventana de datos de giroscopio y acelerometro a la ESP.
+    - Es necesario ejecutar esta opcion antes que cualquier otra para el buen funcionamiento de la aplicación
+
+- Gráfico aceleración
+    - Muestra las mediciones obtenidas del acelerometro en la ventana solicitada
+
+- Gráfico giroscopio
+    - Muestra las mediciones obtenidas del giroscopio en la ventana solicitada
+
+- Gráfico RMS
+    - Muestra el RMS calculado para cada eje de ambos sensores
+
+- Tabla 5-Peaks
+    - Muestra los 5 peaks de las mediciones para cada eje de ambos sensores
+
+- Gráfico FFT reales
+    - Muestra la parte real del FFT calculado para las mediciones de cada eje para ambos sensores
+
+- Gráfico FFT imaginarios
+    - Muestra la parte imaginaria del FFT calculado para las mediciones de cada eje para ambos sensores
+
+- Cambiar tamaño ventana
+    - podrá ingresar un nuevo tamaño de ventana de mediciones. Es recomendable no solicitar más de 100 datos, pues más allá la aplicación puede fallar.
+    - Al apretar "Cambiar tamaño de ventana" después de haber ingrasado el nuevo tamaño de ventana se realizará el cambio. No hay ningún feedback en la aplicación.
+
+- Cerrar conexión
+    - Cierra la conexión con la ESP y solicita a la ESP que se reinicie.
+
+### [Video demostrativo](https://youtu.be/MJW4lkWswok)
+El enlace lo llevará a un video demostrativo de las funcionalidades de la aplicación
+
+
 
 ## Descripción
 El proyecto será una aplicación simple con _Python_ encargada de recibir datos desde la _ESP32_. La _ESP32_ recibirá a su vez datos crudos desde el _BMI270_.  
@@ -53,11 +118,4 @@ Se debe entregar:
     5. Reinicio de la _ESP_ (corte de comunicación)
     6. Obtencion de una cuarta ventana luego del corte de comunicación (deberán ejecutar su app nuevamente). Esta ventana debe ser el del nuevo tamaño que difinieron en el paso 3.
 
-La tarea debe entregarse antes del día _29-11-2024 23:59_ 
-
-## To do
- [X] Lograr imprimir los tres ejes de aceleración  
- [X] Lograr imprimir los tres ejes de giroscopio  
- [ ] Lograr comunicación Python-C  
- [ ] ...  
- [ ] ...  
+La tarea debe entregarse antes del día _02-12-2024 23:59_ 

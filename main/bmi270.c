@@ -652,8 +652,8 @@ void read_var_handler(uint8_t* addr_lsb, uint8_t* addr_msb, uint8_t* tmp, uint16
 
 void gyroscope_lecture(void){
 
-    //uint8_t addr_gyr_cas = 0x3C;
-    //int8_t factor_zx;
+    uint8_t addr_gyr_cas = 0x3C;
+    uint8_t factor_zx;
 
     uint8_t reg_intstatus  = 0x3, tmp;
     uint8_t addr_gyr_x_lsb = 0x12;
@@ -694,14 +694,14 @@ void gyroscope_lecture(void){
                 printf("<gyroscope_lecture> Error reading gyr_x: %s \n", esp_err_to_name(ret));
             }
             
-            /*
             ret = bmi_read(&addr_gyr_cas, &tmp,1);
             factor_zx = tmp;
 
             if (ret != ESP_OK) {
                 printf("<gyroscope_lecture> Error reading gyr_cas.factor_zx: %s \n", esp_err_to_name(ret));
             }
-            printf("gyr_x: %d g\n", ((int16_t)gyr_x * factor_zx * (gyr_z)/512));
+            printf("gyr_x: %f g\n", (float)((int16_t)gyr_x - ((int8_t)factor_zx * (int16_t)gyr_z/512)));
+            /*
             */
             
             
@@ -784,17 +784,25 @@ void bmipowermode(void) {
     // 400Hz en datos acc, filter: performance optimized, acc_range +/-8g (1g = 9.80665 m/s2, alcance max: 78.4532 m/s2, 16 bit= 65536 => 1bit = 78.4532/32768 m/s2)
     uint8_t reg_pwr_ctrl = 0x7D, val_pwr_ctrl = 0x06;
     uint8_t reg_acc_conf = 0x40, val_acc_conf;
+    uint8_t reg_gyr_conf = 0x42, val_gyr_conf;
     uint8_t reg_pwr_conf = 0x7C, val_pwr_conf = 0x00;
-
     // 0xA8 100hz, 0xA9 para 200Hz, 0xAA 400hz, 0xAB 800hz, 0xAC 1600hz
-    if (Fodr == 200)
+    if (Fodr == 200){
         val_acc_conf = 0xA9;
-    else if (Fodr == 400)
+        val_gyr_conf= 0xE9;
+    }
+    else if (Fodr == 400){
         val_acc_conf = 0xAA;
-    else if (Fodr == 800)
+        val_gyr_conf= 0xEA;
+    }
+    else if (Fodr == 800){
         val_acc_conf = 0xAB;
-    else if (Fodr == 1600)
+        val_gyr_conf= 0xEB;
+    }
+    else if (Fodr == 1600){
         val_acc_conf = 0xAC;
+        val_gyr_conf= 0xEC;
+    }
     else {
         printf("FRECUENCIA DE MUESTREO BMI270 INCORRECTO.\n");
         exit(EXIT_SUCCESS);
@@ -802,6 +810,7 @@ void bmipowermode(void) {
 
     bmi_write(&reg_pwr_ctrl, &val_pwr_ctrl, 1);
     bmi_write(&reg_acc_conf, &val_acc_conf, 1);
+    bmi_write(&reg_gyr_conf, &val_gyr_conf, 1);
     bmi_write(&reg_pwr_conf, &val_pwr_conf, 1);
 
     vTaskDelay(1000 / portTICK_PERIOD_MS);
@@ -1007,8 +1016,9 @@ void read_data_loop(float** data_arrays){
     uint16_t acc_z;
 
     //setup gyr
-    //uint8_t addr_gyr_cas = 0x3C;
-    //int8_t factor_zx;
+    uint8_t addr_gyr_cas = 0x3C;
+    uint8_t factor_zx;
+
     uint8_t addr_gyr_x_lsb = 0x12;
     uint8_t addr_gyr_x_msb = 0x13;
     uint8_t addr_gyr_y_lsb = 0x14;
@@ -1025,12 +1035,16 @@ void read_data_loop(float** data_arrays){
         bmi_read(&reg_intstatus, &tmp, 1);
         if ((tmp & 0b11000000) == 0xC0) {
             //READ GYR
-            read_var_handler(&addr_gyr_x_lsb, &addr_gyr_x_msb, &tmp, &gyr_x);
-            data_arrays[0][i]=(int16_t)gyr_x;
             read_var_handler(&addr_gyr_y_lsb, &addr_gyr_y_msb, &tmp, &gyr_y);
             data_arrays[1][i]=(int16_t)gyr_y;
             read_var_handler(&addr_gyr_z_lsb, &addr_gyr_z_msb, &tmp, &gyr_z);
             data_arrays[2][i]=(int16_t)gyr_z;
+            
+            ret = bmi_read(&addr_gyr_cas, &tmp,1);
+            factor_zx = tmp;
+            
+            read_var_handler(&addr_gyr_x_lsb, &addr_gyr_x_msb, &tmp, &gyr_x);
+            data_arrays[0][i]=(float)((int16_t)gyr_x - ((int8_t)factor_zx * (int16_t)gyr_z/512));
 
 
             //READ ACC
@@ -1210,7 +1224,7 @@ void app_main(void) {
     char OK_response[3];
     while(1){
         uart_write_bytes(UART_NUM, (const char*)&N, sizeof(int32_t));
-        vTaskDelay(pdMS_TO_TICKS(5000));
+        vTaskDelay(pdMS_TO_TICKS(1000));
 
         r_len = serial_read(OK_response, 3);
         if(r_len > 0){
@@ -1261,8 +1275,9 @@ void app_main(void) {
     uart_write_warp("OK setup");
     printf("\n");
 
-    process_data();
-
+    //process_data();
+    gyroscope_lecture();
+    
     printf("finish\n");
     return;
 }

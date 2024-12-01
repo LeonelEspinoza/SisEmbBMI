@@ -111,7 +111,7 @@ class Ui_GraphAcceleration(QWidget):
     
     def checkbox_ay(self, state):
         if state:
-            self.chart.lineAy, = self.chart.axis.plot(receiver.ax, color='g')
+            self.chart.lineAy, = self.chart.axis.plot(receiver.ay, color='g')
             self.chart.draw()
         else:
             self.chart.lineAy.remove()
@@ -119,7 +119,7 @@ class Ui_GraphAcceleration(QWidget):
             
     def checkbox_az(self, state):
         if state:
-            self.chart.lineAz, = self.chart.axis.plot(receiver.ax, color='b')
+            self.chart.lineAz, = self.chart.axis.plot(receiver.az, color='b')
             self.chart.draw()
         else:
             self.chart.lineAz.remove()
